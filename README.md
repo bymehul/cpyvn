@@ -46,6 +46,8 @@ python main.py --project games/demo
 - Cython build is required for this repo.
 - You need a C compiler (`gcc`/`clang`/Visual Studio Build Tools).
 - Optional video backend (`vnef-video`) details: `docs/commands/video.md`.
+- Export guide (engine + game): `docs/export.md`.
+- Studio GUI (new game + export): `docs/studio.md`.
 - Optional WGPU blur notes: `docs/wgpu_blur.md`.
 - Full memory model: `docs/memory.md`.
 - Enable debug logs with `"debug": true`, `--debug`, or `CPYVN_DEBUG=1`.

@@ -5,6 +5,7 @@ cpyvn has four built-in dev tools:
 - `F4` Hotspot Editor (map/hotspot authoring)
 - `F6` Script Editor (in-engine text editing)
 - `F7` HUD Editor (persistent button placement)
+- `Ctrl+M` Map Overlay Editor (map POI authoring while map is active)
 
 These are runtime debug tools for rapid iteration.
 When any editor mode is open (`F3`/`F4`/`F6`/`F7`), the perf HUD is hidden to reduce visual clutter.
@@ -17,6 +18,7 @@ When any editor mode is open (`F3`/`F4`/`F6`/`F7`), the perf HUD is hidden to re
 - `F6`: Toggle script editor
 - `F7`: Toggle HUD editor
 - `F9`: Quickload
+- `Ctrl+M`: Toggle map overlay editor (only when a map is currently shown)
 - `Esc`: Close active editor mode (or quit if no editor mode is active)
 
 ## Inspector (`F3`)
@@ -77,6 +79,20 @@ Use it to create and edit map hotspots with camera pan/zoom support.
 - Arrow keys: move selected hotspot (when selected)
 - `Shift + Arrow`: move hotspot by larger step
 - `R`: camera reset
+
+## Map Overlay Editor (`Ctrl+M`)
+
+Use it to author map POIs directly on the active map view.
+
+- Works only while `map show ...` is active.
+- Draw point or polygon POIs visually.
+- `Enter`: save/finalize current POI.
+- Saved POIs sync into the active script auto block:
+  - `# cpyvn-editor begin`
+  - `# cpyvn-editor end`
+- The runtime keeps POI overlays clickable/highlighted for immediate test.
+
+For DSL syntax details, see `docs/commands/map.md`.
 
 ## Script Editor (`F6`)
 

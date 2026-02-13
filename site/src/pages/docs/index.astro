@@ -39,13 +39,29 @@ const featuredCommands = commands.slice(0, 9);
         <h3>Prefetch</h3>
         <p>Declare pinned startup assets and prewarmed scripts.</p>
       </a>
+      <a class="card" href={withBase("/docs/export")}>
+        <h3>Export</h3>
+        <p>Bundle engine/runtime and package games per target OS.</p>
+      </a>
+      <a class="card" href={withBase("/docs/studio")}>
+        <h3>Studio GUI</h3>
+        <p>Create new games and run export tasks from a clean desktop UI.</p>
+      </a>
       <a class="card" href={withBase("/docs/memory")}>
         <h3>Memory Model</h3>
         <p>Understand cache layers, scene manifests, and runtime pruning.</p>
       </a>
       <a class="card" href={withBase("/docs/editor-tools")}>
         <h3>Debug Editors</h3>
-        <p>Inspector, hotspot editor, and in-engine script editor controls.</p>
+        <p>Inspector, hotspot editor, map overlay (`Ctrl+M`), and script editor controls.</p>
+      </a>
+      <a class="card" href={withBase("/docs/title-menu")}>
+        <h3>Title Menu</h3>
+        <p>Startup menu layout, actions, and theming.</p>
+      </a>
+      <a class="card" href={withBase("/docs/pause-menu")}>
+        <h3>Pause Menu</h3>
+        <p>In-game save/load/preferences menu configuration.</p>
       </a>
       <a class="card" href={withBase("/docs/wgpu-blur")}>
         <h3>WGPU Blur</h3>

@@ -40,6 +40,8 @@ Plays a video layer behind sprites and UI.
 - Game creators and players: do not need CMake if shipped with prebuilt `libvnef_video` for their platform.
 - Optional override for custom library path:
   - `CPYVN_VNEF_VIDEO_LIB=/absolute/path/to/libvnef_video.so` (Linux example)
+  - `CPYVN_VNEF_VIDEO_DIR=/path/to/folder/containing/lib` (engine searches this dir too)
+- Export flow (engine + game) is documented in `docs/export.md`.
 
 **Example**
 ```vn

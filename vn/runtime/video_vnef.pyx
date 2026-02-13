@@ -63,18 +63,72 @@ class _VNEAudioFrame(ctypes.Structure):
 def _repo_root() -> Path:
     return Path(__file__).resolve().parents[2]
 
+def _platform_key() -> str:
+    if sys.platform.startswith("win"):
+        return "windows"
+    if sys.platform == "darwin":
+        return "macos"
+    return "linux"
+
+def _runtime_roots() -> list[Path]:
+    cdef list roots = []
+    cdef set seen = set()
+    cdef object base
+    cdef str env_dir = os.getenv("CPYVN_VNEF_VIDEO_DIR", "").strip()
+    cdef object meipass = getattr(sys, "_MEIPASS", "")
+    cdef object exe = Path(sys.executable).resolve().parent if getattr(sys, "executable", "") else None
+
+    for base in [
+        Path(env_dir).resolve() if env_dir else None,
+        _repo_root(),
+        Path(__file__).resolve().parent,
+        Path.cwd(),
+        Path(meipass).resolve() if meipass else None,
+        exe,
+        exe.parent if exe is not None else None,
+    ]:
+        if base is None:
+            continue
+        if base in seen:
+            continue
+        seen.add(base)
+        roots.append(base)
+    return roots
+
 def _candidate_library_paths() -> list[Path]:
-    cdef object root = _repo_root()
-    cdef list candidates = [
-        root / "vnef-video" / "build" / "libvnef_video.so",
-        root / "vnef-video" / "build" / "libvnef_video.dylib",
-        root / "vnef-video" / "build" / "vnef_video.dll",
-        root / "vnef-video" / "build" / "Release" / "vnef_video.dll",
-        root / "vnef-video" / "build" / "Debug" / "vnef_video.dll",
-    ]
+    cdef list candidates = []
+    cdef set seen = set()
+    cdef object root
+    cdef str lib_name
+    cdef str platform_key = _platform_key()
     cdef str env_path = os.getenv("CPYVN_VNEF_VIDEO_LIB", "").strip()
+    cdef object direct_path
+
+    def _push(object p) -> None:
+        if p is None:
+            return
+        if p in seen:
+            return
+        seen.add(p)
+        candidates.append(p)
+
     if env_path:
-        candidates.insert(0, Path(env_path))
+        direct_path = Path(env_path).resolve()
+        _push(direct_path)
+
+    for root in _runtime_roots():
+        for lib_name in _candidate_library_names():
+            _push(root / lib_name)
+            _push(root / "runtime" / "vnef" / lib_name)
+            _push(root / "vnef-video-artifacts" / platform_key / lib_name)
+            _push(root / "vnef-video-artifacts" / platform_key / "lib" / lib_name)
+            _push(root / "vnef-video-artifacts" / platform_key / "bin" / lib_name)
+            _push(root / "vnef-video" / "artifacts" / platform_key / lib_name)
+            _push(root / "vnef-video" / "artifacts" / platform_key / "lib" / lib_name)
+            _push(root / "vnef-video" / "artifacts" / platform_key / "bin" / lib_name)
+            _push(root / "vnef-video" / "build" / lib_name)
+            _push(root / "vnef-video" / "build" / "Release" / lib_name)
+            _push(root / "vnef-video" / "build" / "Debug" / lib_name)
     return candidates
 
 def _candidate_library_names() -> list[str]:
@@ -110,7 +164,7 @@ def _load_vnef_library() -> ctypes.CDLL:
 
     cdef str detail = "; ".join(attempts) if attempts else "library not found"
     raise VideoBackendUnavailable(
-        "vnef backend unavailable. Build vnef-video and set CPYVN_VNEF_VIDEO_LIB if needed. "
+        "vnef backend unavailable. Build vnef-video and set CPYVN_VNEF_VIDEO_LIB/CPYVN_VNEF_VIDEO_DIR if needed. "
         f"Attempts: {detail}"
     )
 
