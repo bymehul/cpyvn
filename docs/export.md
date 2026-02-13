@@ -145,6 +145,7 @@ matrix workflow:
 
 It runs on Linux, Windows, and macOS GitHub runners and uploads
 `cpyvn-engine-*` artifacts for each OS.
+The workflow also builds `vnef-video` native libs on each OS before export.
 
 Trigger it from GitHub:
 

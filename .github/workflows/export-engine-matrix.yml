@@ -35,8 +35,64 @@ jobs:
       - name: Build Cython extensions
         run: python setup_cython.py build_ext --inplace
 
+      - name: Install vnef-video build deps (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y cmake pkg-config \
+            libavformat-dev libavcodec-dev libavutil-dev libswscale-dev libswresample-dev
+
+      - name: Install vnef-video build deps (macOS)
+        if: runner.os == 'macOS'
+        run: |
+          brew install cmake pkg-config ffmpeg
+
+      - name: Setup MSYS2 (Windows)
+        if: runner.os == 'Windows'
+        uses: msys2/setup-msys2@v2
+        with:
+          update: true
+          install: >-
+            base-devel
+            mingw-w64-x86_64-toolchain
+            mingw-w64-x86_64-cmake
+            mingw-w64-x86_64-pkgconf
+            mingw-w64-x86_64-ffmpeg
+
+      - name: Build vnef-video artifact (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          cmake -S vnef-video -B vnef-video/build -DVNEF_VIDEO_BUILD_SHARED=ON
+          cmake --build vnef-video/build --config Release
+          mkdir -p vnef-video/artifacts/linux
+          cp -f vnef-video/build/libvnef_video.so vnef-video/artifacts/linux/libvnef_video.so
+
+      - name: Build vnef-video artifact (macOS)
+        if: runner.os == 'macOS'
+        run: |
+          cmake -S vnef-video -B vnef-video/build -DVNEF_VIDEO_BUILD_SHARED=ON
+          cmake --build vnef-video/build --config Release
+          mkdir -p vnef-video/artifacts/macos
+          cp -f vnef-video/build/libvnef_video.dylib vnef-video/artifacts/macos/libvnef_video.dylib
+
+      - name: Build vnef-video artifact (Windows)
+        if: runner.os == 'Windows'
+        shell: msys2 {0}
+        run: |
+          cmake -S vnef-video -B vnef-video/build -G "MinGW Makefiles" -DVNEF_VIDEO_BUILD_SHARED=ON
+          cmake --build vnef-video/build --config Release
+          mkdir -p vnef-video/artifacts/windows
+          if [[ -f vnef-video/build/vnef_video.dll ]]; then
+            cp -f vnef-video/build/vnef_video.dll vnef-video/artifacts/windows/vnef_video.dll
+          elif [[ -f vnef-video/build/libvnef_video.dll ]]; then
+            cp -f vnef-video/build/libvnef_video.dll vnef-video/artifacts/windows/vnef_video.dll
+          else
+            echo "vnef_video.dll build output not found"
+            exit 1
+          fi
+
       - name: Export frozen engine bundle
-        run: python tools/export_engine.py --target host --freeze --zip --output dist/exports/engine
+        run: python tools/export_engine.py --target host --freeze --strict --zip --output dist/exports/engine
 
       - name: Upload engine artifacts
         uses: actions/upload-artifact@v4
