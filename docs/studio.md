@@ -25,6 +25,25 @@ Output example:
 - `dist/studio/linux/cpyvn-studio/`
 - `dist/studio/cpyvn-studio-linux.zip`
 
+## GitHub Actions (Cross-OS Studio Artifacts)
+
+If you want all Studio builds without local setup on each OS, run:
+
+- `.github/workflows/export-studio-matrix.yml`
+
+It builds Studio on Linux, Windows, and macOS runners and uploads:
+
+- `cpyvn-studio-ubuntu-latest`
+- `cpyvn-studio-windows-latest`
+- `cpyvn-studio-macos-latest`
+- `cpyvn-studios-all` (combined archive with all Studio zips)
+
+Trigger from GitHub:
+
+1. Open **Actions**.
+2. Select **Export Studio Matrix**.
+3. Click **Run workflow**.
+
 The frozen app can:
 
 - create projects

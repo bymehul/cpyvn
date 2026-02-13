@@ -154,9 +154,6 @@ Trigger it from GitHub:
 2. Select **Export Engine Matrix**.
 3. Click **Run workflow**.
 
-It also runs automatically on pushes to `main` when engine/runtime-related files
-change.
-
 Note:
 
 - Workflow artifacts are temporary; publish zips to a GitHub Release for long-term distribution.

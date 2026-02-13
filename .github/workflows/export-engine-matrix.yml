@@ -2,19 +2,6 @@ name: Export Engine Matrix
 
 on:
   workflow_dispatch:
-  push:
-    branches:
-      - main
-    paths:
-      - .github/workflows/export-engine-matrix.yml
-      - tools/export_engine.py
-      - tools/freeze_runner.py
-      - tools/ci/patch_vnef_ffmpeg7.py
-      - setup_cython.py
-      - requirements.txt
-      - requirements-video.txt
-      - vn/**
-      - vnef-video/**
 
 permissions:
   contents: read

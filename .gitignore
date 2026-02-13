@@ -27,7 +27,7 @@ dist/
 *.pyd
 *.dll
 *.c
-
+cpyvn-engines-all.zip
 # Docs site
 site/node_modules/
 site/dist/

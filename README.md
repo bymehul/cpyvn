@@ -49,8 +49,9 @@ python main.py --project games/demo
 - Export guide (engine + game): `docs/export.md`.
 - Studio GUI (new game + export): `docs/studio.md`.
 - Standalone Studio build: `tools/freeze_studio.py --target host --clean --zip`.
+- Cross-OS Studio CI workflow: `.github/workflows/export-studio-matrix.yml` (manual trigger; includes `cpyvn-studios-all` artifact).
 - Player-ready no-Python export: `tools/export_engine.py --target host --freeze`.
-- Cross-OS CI export workflow: `.github/workflows/export-engine-matrix.yml` (manual + auto on `main` engine/runtime changes; includes `cpyvn-engines-all` artifact).
+- Cross-OS CI export workflow: `.github/workflows/export-engine-matrix.yml` (manual trigger; includes `cpyvn-engines-all` artifact).
 - Optional WGPU blur notes: `docs/wgpu_blur.md`.
 - Full memory model: `docs/memory.md`.
 - Enable debug logs with `"debug": true`, `--debug`, or `CPYVN_DEBUG=1`.
