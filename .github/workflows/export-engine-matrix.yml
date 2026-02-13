@@ -35,6 +35,28 @@ jobs:
       - name: Build Cython extensions
         run: python setup_cython.py build_ext --inplace
 
+      - name: Patch vnef-video for FFmpeg 7 API
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p = Path("vnef-video/src/vnef_video.c")
+          src = p.read_text(encoding="utf-8")
+          replacements = {
+              "int ch = v->adec->ch_layout.nb_channels > 0 ? v->adec->ch_layout.nb_channels : (v->adec->channels > 0 ? v->adec->channels : 2);":
+              "int ch = v->adec->ch_layout.nb_channels > 0 ? v->adec->ch_layout.nb_channels : 2;",
+              "out_info->channels = v->adec->ch_layout.nb_channels > 0 ? v->adec->ch_layout.nb_channels : v->adec->channels;":
+              "out_info->channels = v->adec->ch_layout.nb_channels > 0 ? v->adec->ch_layout.nb_channels : 2;",
+              "int channels = v->adec->ch_layout.nb_channels > 0 ? v->adec->ch_layout.nb_channels : v->adec->channels;":
+              "int channels = v->adec->ch_layout.nb_channels > 0 ? v->adec->ch_layout.nb_channels : 2;",
+          }
+          for old, new in replacements.items():
+              if old not in src:
+                  raise SystemExit(f"expected pattern not found in {p}: {old}")
+              src = src.replace(old, new)
+          p.write_text(src, encoding="utf-8")
+          print("patched", p)
+          PY
+
       - name: Install vnef-video build deps (Linux)
         if: runner.os == 'Linux'
         run: |
