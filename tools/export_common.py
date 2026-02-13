@@ -1,18 +1,27 @@
 from __future__ import annotations
 
 import json
+import os
 import platform
 import shutil
 import zipfile
 from pathlib import Path
 
-
-REPO_ROOT = Path(__file__).resolve().parents[1]
+_ENV_REPO_ROOT = os.environ.get("CPYVN_REPO_ROOT", "").strip()
+if _ENV_REPO_ROOT:
+    REPO_ROOT = Path(_ENV_REPO_ROOT).expanduser().resolve()
+else:
+    REPO_ROOT = Path(__file__).resolve().parents[1]
 SUPPORTED_TARGETS = ("linux", "windows", "macos")
 VNEF_LIB_NAMES = {
     "linux": "libvnef_video.so",
     "windows": "vnef_video.dll",
     "macos": "libvnef_video.dylib",
+}
+RUNNER_EXEC_NAMES = {
+    "linux": "cpyvn-runner",
+    "windows": "cpyvn-runner.exe",
+    "macos": "cpyvn-runner",
 }
 
 
@@ -47,6 +56,10 @@ def resolve_targets(target_value: str) -> list[str]:
 
 def vnef_lib_name(target: str) -> str:
     return VNEF_LIB_NAMES[target]
+
+
+def runner_exec_name(target: str) -> str:
+    return RUNNER_EXEC_NAMES[target]
 
 
 def find_vnef_artifact(target: str, artifacts_root: Path) -> Path | None:

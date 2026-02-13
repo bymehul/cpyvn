@@ -102,6 +102,7 @@ cpdef void main():
             video_audio=project.video_audio,
             video_framedrop=project.video_framedrop,
             features=project.features,
+            dev_mode=debug,
         )
         return
 
@@ -137,6 +138,7 @@ cpdef void main():
             video_audio=True,
             video_framedrop="auto",
             features={},
+            dev_mode=debug,
         )
         return
 

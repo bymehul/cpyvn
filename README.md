@@ -48,6 +48,9 @@ python main.py --project games/demo
 - Optional video backend (`vnef-video`) details: `docs/commands/video.md`.
 - Export guide (engine + game): `docs/export.md`.
 - Studio GUI (new game + export): `docs/studio.md`.
+- Standalone Studio build: `tools/freeze_studio.py --target host --clean --zip`.
+- Player-ready no-Python export: `tools/export_engine.py --target host --freeze`.
+- Cross-OS CI export workflow: `.github/workflows/export-engine-matrix.yml`.
 - Optional WGPU blur notes: `docs/wgpu_blur.md`.
 - Full memory model: `docs/memory.md`.
 - Enable debug logs with `"debug": true`, `--debug`, or `CPYVN_DEBUG=1`.
@@ -89,6 +92,7 @@ label end:
 - Inspector: `F3`
 - Hotspot editor: `F4`
 - Script editor: `F6`
+- Editor/debug keys are available in dev mode only (`--debug` or `"debug": true`).
 
 Pause menu theme/layout can be customized per project with `ui.pause_menu_file`
 (example: `games/demo/pause_menu.json`).

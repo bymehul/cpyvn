@@ -179,6 +179,7 @@ class VNRuntime(InspectorMixin, PauseMenuMixin, TitleMenuMixin, RenderMixin, Sav
         video_framedrop: str = "auto",
         feature_script_paths: Dict[str, Path] | None = None,
         feature_flags: Dict[str, bool] | None = None,
+        dev_mode: bool = False,
     ) -> None:
         self.commands = commands
         self.labels = labels
@@ -198,6 +199,7 @@ class VNRuntime(InspectorMixin, PauseMenuMixin, TitleMenuMixin, RenderMixin, Sav
                 self.feature_flags[str(_k)] = bool(_v)
 
         ui = ui or UiConfig()
+        self.dev_mode = bool(dev_mode)
         self.text_speed = ui.text_speed
         self.show_perf = ui.show_perf
         self.call_auto_loading = bool(ui.call_auto_loading)
@@ -408,10 +410,10 @@ class VNRuntime(InspectorMixin, PauseMenuMixin, TitleMenuMixin, RenderMixin, Sav
                 return
 
             if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_F6:
+                if self.dev_mode and event.key == pygame.K_F6:
                     self._toggle_script_editor()
                     return
-                if event.key == pygame.K_m and (
+                if self.dev_mode and event.key == pygame.K_m and (
                     (getattr(event, "mod", 0) & pygame.KMOD_CTRL)
                     or (pygame.key.get_mods() & pygame.KMOD_CTRL)
                 ):
@@ -430,10 +432,10 @@ class VNRuntime(InspectorMixin, PauseMenuMixin, TitleMenuMixin, RenderMixin, Sav
                 if self.pause_menu_active:
                     self._pause_menu_keydown(event)
                     return
-                if event.key == pygame.K_F4:
+                if self.dev_mode and event.key == pygame.K_F4:
                     self._toggle_hotspot_editor()
                     return
-                if event.key == pygame.K_F7:
+                if self.dev_mode and event.key == pygame.K_F7:
                     self._toggle_hud_editor()
                     return
                 if event.key == pygame.K_ESCAPE:
@@ -443,7 +445,7 @@ class VNRuntime(InspectorMixin, PauseMenuMixin, TitleMenuMixin, RenderMixin, Sav
                         return
                     self._toggle_pause_menu()
                     return
-                if event.key == pygame.K_F3:
+                if self.dev_mode and event.key == pygame.K_F3:
                     self.show_inspector = not self.show_inspector
                     if self.show_inspector and self.show_hotspot_editor:
                         self._toggle_hotspot_editor()
@@ -455,10 +457,10 @@ class VNRuntime(InspectorMixin, PauseMenuMixin, TitleMenuMixin, RenderMixin, Sav
                         self.inspector_resize_start_rect = None
                         self.inspector_asset_mode = False
                     return
-                if event.key == pygame.K_F5:
+                if self.dev_mode and event.key == pygame.K_F5:
                     self.save_quick()
                     return
-                if event.key == pygame.K_F9:
+                if self.dev_mode and event.key == pygame.K_F9:
                     self.load_quick()
                     return
                 if self.show_hud_editor:

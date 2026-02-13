@@ -81,7 +81,7 @@ class RenderMixin:
         if self._is_notify_active():
             self.textbox.draw_notify(self.screen, self.notify_message or "")
 
-        if self.show_perf and not (self.show_inspector or self.show_hotspot_editor or self.show_hud_editor or self.show_script_editor or self.pause_menu_active):
+        if self.show_perf and self.dev_mode:
             self._draw_perf()
 
         if self.loading_active:
@@ -913,6 +913,8 @@ class RenderMixin:
                 f"Frame: {self._frame_ms} ms",
                 f"Res: {self.screen.get_width()}x{self.screen.get_height()}",
                 f"Sprites: {len(self.sprites)}",
+                "F3 Inspector  F4 Hotspot  F5 Save  F6 Script  F7 HUD  F9 Load",
+                "Ctrl+M Debug Menu  Esc Pause  I Inventory",
             ]
             if getattr(self, "video_path", None):
                 lines.append(f"Video: {self.video_path} ({self.video_fit})")

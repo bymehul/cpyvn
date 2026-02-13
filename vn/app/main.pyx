@@ -156,6 +156,7 @@ cpdef void run(
     bint video_audio = True,
     str video_framedrop = "auto",
     dict features = None,
+    bint dev_mode = False,
 ):
     cdef object assets, screen, blur_backend
     cdef object selected_backend
@@ -277,6 +278,7 @@ cpdef void run(
         video_framedrop=video_framedrop,
         feature_script_paths=feature_script_paths,
         feature_flags=feature_flags,
+        dev_mode=dev_mode,
     )
 
     if prefetch_scripts:

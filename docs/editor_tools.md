@@ -8,7 +8,8 @@ cpyvn has four built-in dev tools:
 - `Ctrl+M` Map Overlay Editor (map POI authoring while map is active)
 
 These are runtime debug tools for rapid iteration.
-When any editor mode is open (`F3`/`F4`/`F6`/`F7`), the perf HUD is hidden to reduce visual clutter.
+They are available only in dev mode (`project.json` has `"debug": true` or you run with `--debug`).
+In player builds (debug off), F-key editors, Ctrl+M debug menu, and perf HUD are hidden.
 
 ## Global Shortcuts
 

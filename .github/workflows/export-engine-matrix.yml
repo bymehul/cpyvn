@@ -1,0 +1,48 @@
+name: Export Engine Matrix
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  export:
+    name: Export (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip setuptools wheel
+          pip install -r requirements.txt
+          pip install pyinstaller
+
+      - name: Build Cython extensions
+        run: python setup_cython.py build_ext --inplace
+
+      - name: Export frozen engine bundle
+        run: python tools/export_engine.py --target host --freeze --zip --output dist/exports/engine
+
+      - name: Upload engine artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: cpyvn-engine-${{ matrix.os }}
+          path: |
+            dist/exports/engine/cpyvn-engine-*
+          if-no-files-found: error
+          retention-days: 30

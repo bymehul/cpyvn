@@ -3,13 +3,39 @@
 `cpyvn` includes a lightweight desktop GUI for two tasks:
 
 - Create a new game project (with window size/FPS options)
-- Run engine/game export workflows
+- Run/export workflows for dev and player builds
 
 ## Run
 
 ```bash
 python tools/studio/main.py
 ```
+
+## Build Standalone Studio (No Python Required For Dev Machine)
+
+Build on each target OS:
+
+```bash
+python -m pip install pyinstaller
+python tools/freeze_studio.py --target host --clean --zip
+```
+
+Output example:
+
+- `dist/studio/linux/cpyvn-studio/`
+- `dist/studio/cpyvn-studio-linux.zip`
+
+The frozen app can:
+
+- create projects
+- run dev game (`Run (Dev)`)
+- export engine/game bundles
+
+Current limitation:
+
+- `Freeze runner (PyInstaller)` is disabled inside frozen Studio.
+- Use source Studio (`python tools/studio/main.py`) for freeze-runner player exports.
+- For cross-OS CI engine artifacts, use `.github/workflows/export-engine-matrix.yml`.
 
 ## New Game tab
 
@@ -31,12 +57,19 @@ Generated files include:
 
 - **Export Engine** wraps `tools/export_engine.py`.
 - **Export Game** wraps `tools/export_game.py`.
+- **One-Click Export**: auto-resolves paths from your project location, builds engine if missing, then exports game.
+- **Run (Dev)** runs current project directly from source.
+- **Run (Exported)** runs `play.sh` / `play.bat` from exported bundle.
+- **Stop** terminates current run/export process.
+- **Freeze runner (PyInstaller)** creates player-ready no-Python runtime in engine export.
 - Uses the selected target (`host|linux|windows|macos` for game, plus `all` for engine).
 - Logs stream in the GUI log panel.
+- In frozen Studio builds, export/run tasks are executed through internal Studio task mode (`--studio-task`).
 
 ## Notes
 
 - `Export Game` does not allow `target=all` by design.
-- After export, use generated setup scripts:
-  - Linux/macOS: `setup-engine.sh` / `setup-game.sh`
-  - Windows: `setup-engine.bat` / `setup-game.bat`
+- For frozen exports, `play.*` can run directly.
+- For source runtime exports, run engine setup first:
+  - Linux/macOS: `engine/setup-engine.sh`
+  - Windows: `engine/setup-engine.bat`
