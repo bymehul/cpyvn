@@ -147,6 +147,9 @@ def _write_launchers(engine_dir: Path, target: str, lib_name: str, freeze: bool)
                     'ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"',
                     f'export CPYVN_VNEF_VIDEO_LIB="$ROOT_DIR/runtime/vnef/{lib_name}"',
                     f'RUNNER="$ROOT_DIR/runner/{exec_name}"',
+                    'if [[ -f "$RUNNER" && ! -x "$RUNNER" ]]; then',
+                    '  chmod +x "$RUNNER" 2>/dev/null || true',
+                    "fi",
                     'if [[ ! -x "$RUNNER" ]]; then',
                     '  echo "Frozen runner missing: $RUNNER" >&2',
                     "  exit 2",
@@ -260,6 +263,11 @@ def _build_one_target(
         if frozen_runner_dir is None:
             raise RuntimeError("Frozen runner dir missing.")
         copy_any(frozen_runner_dir, engine_dir / "runner")
+        # GitHub artifact re-zips can drop executable bits on POSIX.
+        if target != "windows":
+            runner_path = engine_dir / "runner" / runner_exec_name(target)
+            if runner_path.exists():
+                runner_path.chmod(0o755)
         for rel in ["LICENSE", "README.md"]:
             src = REPO_ROOT / rel
             if src.exists():

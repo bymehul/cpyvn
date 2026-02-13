@@ -98,6 +98,9 @@ def _write_game_launchers(bundle_dir: Path, target: str, lib_name: str, engine_h
                 "set -euo pipefail",
                 'ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"',
                 f'RUNNER="$ROOT_DIR/engine/{exec_name}"',
+                'if [[ -f "$RUNNER" && ! -x "$RUNNER" ]]; then',
+                '  chmod +x "$RUNNER" 2>/dev/null || true',
+                "fi",
                 'if [[ -x "$RUNNER" ]]; then',
                 f'  export CPYVN_VNEF_VIDEO_LIB="$ROOT_DIR/engine/runtime/vnef/{lib_name}"',
                 '  "$RUNNER" --project "$ROOT_DIR/game" "$@"',
@@ -166,6 +169,10 @@ def export_game(
 
     lib_name = vnef_lib_name(resolved_target)
     runner_relpath = _engine_runner_relpath(bundle_dir / "engine", resolved_target)
+    if resolved_target != "windows":
+        runner_file = bundle_dir / "engine" / runner_relpath
+        if runner_file.exists():
+            runner_file.chmod(0o755)
     engine_has_frozen = (bundle_dir / "engine" / runner_relpath).exists()
     _write_game_launchers(
         bundle_dir,
