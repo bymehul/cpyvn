@@ -1,0 +1,31 @@
+---
+import "../styles/global.css";
+
+const { title = "cpyvn", description = "A minimal, script-first VN engine." } = Astro.props;
+---
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content={description} />
+    <title>{title}</title>
+  </head>
+  <body>
+    <slot />
+    <script>
+      const key = "cpyvn-theme";
+      const root = document.documentElement;
+      const stored = localStorage.getItem(key);
+      if (stored) root.dataset.theme = stored;
+      const btn = document.querySelector("[data-theme-toggle]");
+      if (btn) {
+        btn.addEventListener("click", () => {
+          const next = root.dataset.theme === "dark" ? "light" : "dark";
+          root.dataset.theme = next;
+          localStorage.setItem(key, next);
+        });
+      }
+    </script>
+  </body>
+</html>

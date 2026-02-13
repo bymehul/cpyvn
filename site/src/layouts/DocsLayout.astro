@@ -1,0 +1,21 @@
+---
+import BaseLayout from "./BaseLayout.astro";
+import Header from "../components/Header.astro";
+import Footer from "../components/Footer.astro";
+import DocsSidebar from "../components/DocsSidebar.astro";
+
+const { title, description, current = "" } = Astro.props;
+---
+
+<BaseLayout title={title} description={description}>
+  <Header current="/docs" />
+  <main class="docs-shell">
+    <div class="container docs-layout">
+      <DocsSidebar current={current} />
+      <section class="docs-content">
+        <slot />
+      </section>
+    </div>
+  </main>
+  <Footer />
+</BaseLayout>

@@ -1,0 +1,51 @@
+---
+import fs from "node:fs";
+import path from "node:path";
+import { withBase } from "../lib/paths";
+
+const { current = "" } = Astro.props;
+const repoRoot = path.resolve(process.cwd(), "..");
+const commandsDir = path.join(repoRoot, "docs", "commands");
+const commands = fs
+  .readdirSync(commandsDir)
+  .filter((file) => file.endsWith(".md") && file !== "index.md")
+  .sort()
+  .map((file) => file.replace(/\.md$/, ""));
+
+const sections = [
+  { label: "Overview", path: "/docs/overview", href: withBase("/docs/overview") },
+  { label: "Editor Tools", path: "/docs/editor-tools", href: withBase("/docs/editor-tools") },
+  { label: "Memory", path: "/docs/memory", href: withBase("/docs/memory") },
+  { label: "Prefetch", path: "/docs/prefetch", href: withBase("/docs/prefetch") },
+  { label: "WGPU Blur", path: "/docs/wgpu-blur", href: withBase("/docs/wgpu-blur") },
+  { label: "Commands", path: "/docs/commands", href: withBase("/docs/commands") },
+];
+---
+
+<aside class="docs-sidebar">
+  <div class="docs-sidebar__block">
+    <div class="docs-sidebar__title">Docs</div>
+    <nav class="docs-sidebar__nav">
+      {sections.map((item) => (
+        <a class={current === item.path ? "active" : ""} href={item.href}>
+          {item.label}
+        </a>
+      ))}
+    </nav>
+  </div>
+  <div class="docs-sidebar__block">
+    <div class="docs-sidebar__title">Commands</div>
+    <div class="docs-sidebar__scroll">
+      <nav class="docs-sidebar__nav">
+        {commands.map((name) => {
+          const pathName = `/docs/commands/${name}`;
+          return (
+            <a class={current === pathName ? "active" : ""} href={withBase(pathName)}>
+              {name}
+            </a>
+          );
+        })}
+      </nav>
+    </div>
+  </div>
+</aside>

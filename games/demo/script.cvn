@@ -1,0 +1,293 @@
+# demo project for cpyvn (V1)
+
+include "characters.cvn" as chars;
+include "chapters/intro.cvn" as intro;
+include "chapters/outro.cvn" as outro;
+
+label start:
+    set visits 0;
+    track visits +1;
+    loading "Loading assets" {
+        preload bg "witches_library.png";
+        preload sprites "body1 1.png";
+        preload audio "ui_bell.wav";
+    };
+    scene image "witches_library.png" fade 0.6 float 6 0.4;
+    play tune "I'll be Here.wav";
+    chars.narrator "Welcome to cpyvn.";
+    chars.narrator "This is a minimal, script-first VN engine.";
+    chars.narrator "Styles: [b]bold[/b], [i]italic[/i], [color=#ff6b6b]color[/color], [shake]shake[/shake].";
+    chars.alice "I can auto-show because I have a default sprite.";
+    notify "New tip: choices are clickable." 3.5;
+    sound effect "ui_bell.wav";
+    echo "ui_bell.wav" start;
+    wait 0.2;
+    echo "ui_bell.wav" stop;
+    voice narrator "ui_bell.wav";
+    wait 0.4;
+    blend fade 0.8;
+
+    check visits > 1 {
+        chars.narrator "Welcome back.";
+    };
+
+    ask "What to do?"
+        "Show a character sprite" -> show_demo
+        "Animation demo" -> animate_demo
+        "Hotspot map demo" -> hotspot_demo
+        "HUD button demo" -> hud_demo
+        "Input prompt demo" -> input_demo
+        "Timed choice demo" -> timed_demo
+        "Phone message demo" -> phone_demo
+        "Meter demo" -> meter_demo
+        "Inventory demo" -> items.inventory_demo
+        "Map demo" -> maps.map_demo
+        "Included intro" -> intro.intro
+        "Included outro" -> outro.bonus_end
+        "End" -> end;
+
+label show_demo:
+    scene color #2b2d42 fade 0.4 {
+        chars.narrator "Transition demo: scene/show/off now support all transition styles.";
+        chars.narrator "Scene transitions (background):";
+
+        scene color #243447 fade 0.35;
+        scene color #203a3a wipe 0.35;
+        scene color #3a2433 slide 0.35;
+        scene color #2a2a48 dissolve 0.45;
+        scene color #223a2a zoom 0.40;
+        scene color #1e2f3f blur 0.45;
+        scene color #3d2b1f flash 0.25;
+        scene color #1f1f1f shake 0.35;
+        scene color #2b2d42 none 0.1;
+        scene image "witches_library.png" fade 0.45 float 6 0.4;
+
+        chars.narrator "Sprite transitions (show/off):";
+
+        chars.narrator "show/off fade";
+        show chars.alice happy right fade 0.30;
+        wait 0.55;
+        off chars.alice fade 0.30;
+        wait 0.45;
+
+        chars.narrator "show/off wipe";
+        show chars.alice happy right wipe 0.30;
+        wait 0.55;
+        off chars.alice wipe 0.30;
+        wait 0.45;
+
+        chars.narrator "show/off slide";
+        show chars.alice happy right slide 0.30;
+        wait 0.55;
+        off chars.alice slide 0.30;
+        wait 0.45;
+
+        chars.narrator "show/off dissolve";
+        show chars.alice happy right dissolve 0.40;
+        wait 0.65;
+        off chars.alice dissolve 0.40;
+        wait 0.50;
+
+        chars.narrator "show/off zoom";
+        show chars.alice happy right zoom 0.35;
+        wait 0.60;
+        off chars.alice zoom 0.35;
+        wait 0.50;
+
+        chars.narrator "show/off blur";
+        show chars.alice happy right blur 0.40;
+        wait 0.70;
+        off chars.alice blur 0.40;
+        wait 0.55;
+
+        chars.narrator "show/off flash";
+        show chars.alice happy right flash 0.25;
+        wait 0.50;
+        off chars.alice flash 0.25;
+        wait 0.40;
+
+        chars.narrator "show/off shake";
+        show chars.alice happy right shake 0.35 float 4 1.2;
+        wait 0.60;
+        off chars.alice shake 0.35;
+        wait 0.45;
+
+        chars.narrator "show/off none";
+        show chars.alice happy right none 0.1;
+        wait 0.25;
+        off chars.alice none 0.1;
+        wait 0.20;
+
+        show chars.alice happy right fade 0.25;
+        chars.alice "Now full-screen blend styles with explicit timing:";
+
+        chars.narrator "blend fade 0.70";
+        blend fade 0.70;
+        wait 0.20;
+
+        chars.narrator "blend wipe 0.65";
+        blend wipe 0.65;
+        wait 0.20;
+
+        chars.narrator "blend slide 0.65";
+        blend slide 0.65;
+        wait 0.20;
+
+        chars.narrator "blend dissolve 0.75";
+        blend dissolve 0.75;
+        wait 0.20;
+
+        chars.narrator "blend zoom 0.70";
+        blend zoom 0.70;
+        wait 0.20;
+
+        chars.narrator "blend blur 0.80";
+        blend blur 0.80;
+        wait 0.20;
+
+        chars.narrator "blend flash 0.25";
+        blend flash 0.25;
+        wait 0.20;
+
+        chars.narrator "blend shake 0.40";
+        blend shake 0.40;
+        wait 0.20;
+
+        chars.narrator "blend none 0.10 (no visible effect)";
+        blend none 0.10;
+        wait 0.15;
+
+        off chars.alice fade 0.25;
+    };
+    go end;
+
+label animate_demo:
+    scene image "witches_library.png" fade 0.4;
+    chars.narrator "Animation demo: move, size, and alpha.";
+    add image anim_card "body1 1.png" 220 140 z 3;
+    animate anim_card move 760 140 1.20 inout;
+    wait 1.30;
+    animate anim_card size 360 520 0.90 out;
+    wait 1.00;
+    animate anim_card alpha 120 0.80 in;
+    wait 0.90;
+    animate anim_card alpha 255 0.60 out;
+    wait 0.70;
+    animate stop anim_card;
+    off anim_card fade 0.25;
+    go end;
+
+label hotspot_demo:
+    scene image "witches_library.png";
+    camera 90 -30 1.20;
+    hotspot debug on;
+    hotspot add to_intro 70 110 320 240 -> hotspot_to_intro;
+    hotspot poly to_outro 900 120 1190 120 1230 300 1120 420 910 360 -> hotspot_to_outro;
+    hotspot add to_end 500 420 280 190 -> hotspot_to_end;
+    chars.narrator "Hotspot demo. Click highlighted zones.";
+
+label hotspot_to_intro:
+    hotspot clear;
+    camera reset;
+    go intro.intro;
+
+label hotspot_to_outro:
+    hotspot clear;
+    camera reset;
+    go outro.bonus_end;
+
+label hotspot_to_end:
+    hotspot clear;
+    camera reset;
+    go end;
+
+label end:
+    hud clear;
+    mute all;
+    scene color #1b263b;
+    chars.narrator "Thanks for trying it.";
+
+label hud_demo:
+    go hud.hud_init;
+
+label hud_demo_continue:
+    scene color #1a1a2e fade 0.4;
+    chars.narrator "HUD demo! Notice the Menu, Save, and Help buttons in the top-left.";
+    chars.narrator "These persist across scene changes. Let's test that...";
+    scene color #16213e fade 0.5;
+    chars.narrator "Scene changed! But the HUD buttons are still here.";
+    scene color #0f3460 fade 0.5;
+    chars.narrator "Another scene change. Still here!";
+    chars.narrator "Click Menu to go back to start, or Help to revisit this demo.";
+    chars.narrator "Press F7 to open the HUD editor and try adding more buttons!";
+    go start;
+
+label input_demo:
+    scene color #1a1a2e fade 0.4;
+    chars.narrator "Let's ask your name.";
+    input player_name "What's your name?";
+    chars.narrator "Demo finished. Returning to menu.";
+    go start;
+
+label timed_demo:
+    scene color #2d1b33 fade 0.4;
+    chars.narrator "Quick! Time is ticking...";
+    ask "What do you do?" timeout 5.0 default 1
+        "Run away" -> timed_ran
+        "Stand still" -> timed_still
+        "Think about it" -> timed_think;
+
+label timed_ran:
+    chars.narrator "You ran away! Good reflexes.";
+    go start;
+
+label timed_still:
+    chars.narrator "You stood still. Bold choice.";
+    go start;
+
+label timed_think:
+    chars.narrator "You thought about it. Interesting.";
+    go start;
+
+label phone_demo:
+    scene color #0d1b2a fade 0.4;
+    chars.narrator "You receive a text message...";
+    phone open "Mom";
+    phone msg left "Hey sweetie, dinner's ready!";
+    chars.narrator "Tap to reply...";
+    phone msg right "Be right there!";
+    chars.narrator "One more message...";
+    phone msg left "Don't be late this time!";
+    chars.narrator "Closing the phone...";
+    phone close;
+    chars.narrator "Phone closed. Back to normal.";
+    go start;
+
+label meter_demo:
+    scene color #1b2838 fade 0.4;
+    set trust 50;
+    meter show trust "Trust" 0 100 color #4ecdc4;
+    chars.narrator "Trust meter is now visible (top-right). Currently at 50.";
+    track trust 20;
+    meter update trust;
+    chars.narrator "Trust increased to 70!";
+    track trust -30;
+    meter update trust;
+    chars.narrator "Trust dropped to 40.";
+    meter clear;
+    chars.narrator "Meters cleared.";
+    go start;
+
+    go start;
+
+label end:
+
+# cpyvn-editor begin
+# auto-generated by inspector/hotspot/hud editor
+# camera 0 0 1;
+# sprites
+# show chars.alice 922 212 z 1;
+# map points
+# map poi "New Poly POI" 289 353 290 555 440 555 441 369 366 348 289 351 -> ::start;
+# map poi "New Poly POI" 467 380 469 547 560 568 629 560 630 377 464 375 518 377 -> ::start;
+# cpyvn-editor end

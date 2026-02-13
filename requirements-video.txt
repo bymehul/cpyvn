@@ -1,0 +1,3 @@
+# cpyvn video backend now uses vnef-video only.
+# No extra Python packages are required here.
+# Build/install native vnef-video library instead.

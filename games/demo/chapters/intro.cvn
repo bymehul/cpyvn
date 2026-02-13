@@ -1,0 +1,5 @@
+label intro:
+    scene color #23395d;
+    narrator "This line is from chapters/intro.cvn.";
+    narrator "It was pulled in by include.";
+    go ::start;

@@ -1,0 +1,77 @@
+---
+import fs from "node:fs";
+import path from "node:path";
+import DocsLayout from "../../../layouts/DocsLayout.astro";
+import { withBase } from "../../../lib/paths";
+
+const repoRoot = path.resolve(process.cwd(), "..");
+const commandsDir = path.join(repoRoot, "docs", "commands");
+const commandFiles = fs
+  .readdirSync(commandsDir)
+  .filter((file) => file.endsWith(".md") && file !== "index.md")
+  .sort();
+const commands = commandFiles.map((file) => {
+  const name = file.replace(/\.md$/, "");
+  const content = fs.readFileSync(path.join(commandsDir, file), "utf-8");
+  const titleLine = content.split("\n").find((line) => line.startsWith("# "));
+  const title = titleLine ? titleLine.replace("# ", "").trim() : name;
+  return { name, title };
+});
+---
+
+<DocsLayout title="cpyvn Commands" current="/docs/commands">
+  <section class="docs-hero">
+    <div class="eyebrow">Commands</div>
+    <h1>DSL command reference</h1>
+    <p>Use search to jump quickly as command count grows.</p>
+  </section>
+
+  <section class="section">
+    <div class="commands-toolbar">
+      <input
+        id="command-filter"
+        class="command-filter"
+        type="search"
+        placeholder="Filter commands (e.g. show, hotspot, preload)"
+        autocomplete="off"
+      />
+      <span id="command-count" class="muted">{commands.length} commands</span>
+    </div>
+    <div class="command-index-list">
+      {commands.map((cmd) => (
+        <a
+          class="command-index-item"
+          href={withBase(`/docs/commands/${cmd.name}`)}
+          data-command-name={cmd.name.toLowerCase()}
+          data-command-title={cmd.title.toLowerCase()}
+        >
+          <strong>{cmd.title}</strong>
+          <span class="muted">/{cmd.name}</span>
+        </a>
+      ))}
+    </div>
+  </section>
+</DocsLayout>
+
+<script>
+  const input = document.getElementById("command-filter");
+  const count = document.getElementById("command-count");
+  const items = Array.from(document.querySelectorAll(".command-index-item"));
+
+  if (input && count) {
+    const update = () => {
+      const q = String(input.value || "").trim().toLowerCase();
+      let visible = 0;
+      for (const item of items) {
+        const name = item.getAttribute("data-command-name") || "";
+        const title = item.getAttribute("data-command-title") || "";
+        const match = !q || name.includes(q) || title.includes(q);
+        item.style.display = match ? "" : "none";
+        if (match) visible += 1;
+      }
+      count.textContent = `${visible} / ${items.length} commands`;
+    };
+    input.addEventListener("input", update);
+    update();
+  }
+</script>

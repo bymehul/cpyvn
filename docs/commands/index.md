@@ -1,0 +1,45 @@
+# Command Reference
+
+Each command is documented in its own file.
+
+- `label` - `docs/commands/label.md`
+- `go` / `goto` - `docs/commands/go.md`
+- `dialogue` (speaker line) - `docs/commands/dialogue.md`
+- `character` - `docs/commands/character.md`
+- `scene` - `docs/commands/scene.md`
+- `add` - `docs/commands/add.md`
+- `show` - `docs/commands/show.md`
+- `off` - `docs/commands/off.md`
+- `ask` - `docs/commands/ask.md`
+- `input` - `docs/commands/input.md`
+- `item` - `docs/commands/item.md`
+- `map` - `docs/commands/map.md`
+- `phone` - `docs/commands/phone.md`
+- `meter` - `docs/commands/meter.md`
+- `hotspot` - `docs/commands/hotspot.md`
+- `hud` - `docs/commands/hud.md`
+- `camera` - `docs/commands/camera.md`
+- `set` - `docs/commands/set.md`
+- `track` - `docs/commands/track.md`
+- `check` - `docs/commands/check.md`
+- `play` - `docs/commands/play.md`
+- `video` - `docs/commands/video.md`
+- `sound` - `docs/commands/sound.md`
+- `echo` - `docs/commands/echo.md`
+- `voice` - `docs/commands/voice.md`
+- `mute` - `docs/commands/mute.md`
+- `wait` - `docs/commands/wait.md`
+- `notify` - `docs/commands/notify.md`
+- `blend` - `docs/commands/blend.md`
+- `transition notes` - `docs/commands/transition.md`
+- `effect` - `docs/commands/effect.md`
+- `animate` - `docs/commands/animate.md`
+- `preload` - `docs/commands/preload.md`
+- `loading` - `docs/commands/loading.md`
+- `cache` - `docs/commands/cache.md`
+- `gc` - `docs/commands/gc.md`
+- `include` - `docs/commands/include.md`
+- `call` - `docs/commands/call.md`
+- `save` - `docs/commands/save.md`
+- `load` - `docs/commands/load.md`
+- `quicksave` (F5/F9) - `docs/commands/quicksave.md`

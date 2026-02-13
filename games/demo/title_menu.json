@@ -1,0 +1,58 @@
+{
+  "title": "cpyvn Demo",
+  "subtitle": "Config-driven title menu",
+  "title_font_size": 78,
+  "subtitle_font_size": 26,
+  "item_font_size": 38,
+  "meta_font_size": 22,
+  "background": {
+    "kind": "image",
+    "value": "witches_library.png",
+    "asset_kind": "bg",
+    "overlay_alpha": 135
+  },
+  "logos": [
+    {
+      "path": "junichi_base_420.png",
+      "asset_kind": "sprites",
+      "x": 1170,
+      "y": 675,
+      "w": 240,
+      "h": 300,
+      "alpha": 170,
+      "anchor": "bottomright"
+    }
+  ],
+  "layout": {
+    "menu_x": 90,
+    "menu_y": 220,
+    "menu_width": 390,
+    "button_height": 48,
+    "button_gap": 10
+  },
+  "colors": {
+    "title": [245, 247, 255, 255],
+    "subtitle": [190, 204, 228, 255],
+    "item": [236, 239, 248, 255],
+    "item_selected": [255, 214, 116, 255],
+    "item_disabled": [132, 142, 164, 255],
+    "panel": [20, 24, 34, 232],
+    "panel_border": [100, 120, 156, 255],
+    "overlay": [4, 8, 15, 135],
+    "slot": [34, 39, 52, 210],
+    "slot_border": [98, 112, 140, 255],
+    "slot_filled": [58, 78, 114, 210],
+    "meta": [172, 182, 205, 255],
+    "ok": [130, 220, 150, 255],
+    "warn": [255, 189, 120, 255]
+  },
+  "buttons": [
+    { "label": "New Game", "action": "new_game" },
+    { "label": "Continue", "action": "continue" },
+    { "label": "Load", "action": "open_load" },
+    { "label": "Preferences", "action": "open_prefs" },
+    { "label": "Quit", "action": "quit" }
+  ],
+  "load_rows": 3,
+  "load_cols": 3
+}

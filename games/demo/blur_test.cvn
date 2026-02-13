@@ -1,0 +1,42 @@
+# blur-only test script
+
+include "characters.vn" as chars;
+
+label start:
+    loading "Loading blur test assets" {
+        preload bg "witches_library.png";
+        preload sprites "body1 1.png";
+        preload audio "ui_bell.wav";
+    };
+
+    scene color #121826;
+    chars.narrator "Blur test scene loaded.";
+    chars.narrator "Watch top-left perf overlay: Blur backend + call counts.";
+
+    chars.narrator "1) Scene blur transition";
+    scene image "witches_library.png" blur 1.40;
+    wait 0.70;
+    scene color #1f2a44 blur 1.20;
+    wait 0.70;
+    scene image "witches_library.png" blur 1.20;
+    wait 0.80;
+
+    chars.narrator "2) Sprite show/off blur transition";
+    show chars.alice happy right blur 1.00;
+    chars.alice "I should appear with blur.";
+    wait 1.00;
+    off chars.alice blur 1.00;
+    wait 0.90;
+
+    chars.narrator "3) Full-screen blend blur";
+    blend blur 2.00;
+    wait 1.20;
+
+    ask "Run blur test again?"
+        "Replay blur test" -> start
+        "End" -> end;
+
+label end:
+    mute all;
+    scene color #0f172a;
+    chars.narrator "Blur test finished.";

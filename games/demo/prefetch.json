@@ -1,0 +1,23 @@
+{
+  "scripts": [
+    "chapters/intro.cvn",
+    "chapters/outro.cvn"
+  ],
+  "images": {
+    "bg": [
+      "witches_library.png"
+    ],
+    "sprites": [
+      "body1 1.png"
+    ]
+  },
+  "audio": {
+    "music": [
+      "I'll be Here.wav"
+    ],
+    "sfx": [
+      "ui_bell.wav"
+    ],
+    "voice": []
+  }
+}

@@ -1,0 +1,56 @@
+include "characters.cvn" as chars;
+
+label start:
+    item clear;
+    set coins 10;
+    set chapter_state "before_save";
+
+    loading "Preparing save/load test assets" {
+        preload bg "witches_library.png";
+        preload sprites "body1 1.png";
+        preload audio "ui_bell.wav";
+    };
+
+    scene image "witches_library.png" fade 0.4;
+    play tune "I'll be Here.wav";
+    sound effect "ui_bell.wav";
+
+    item add silver_coin "Silver Coin" "Used for testing inventory restore." icon "body1 1.png" amount 3;
+    item add old_key "Old Key" "Should come back after load." icon "body1 1.png" amount 1;
+
+    chars.narrator "State A (to be saved):";
+    chars.narrator "vars: coins=${coins}, chapter_state=${chapter_state}";
+    chars.narrator "inventory: silver_coin x3, old_key x1";
+    chars.narrator "background: witches_library.png, music: I'll be Here.wav";
+
+    save "save_load_state_a";
+    chars.narrator "Saved slot: save_load_state_a";
+    go mutate_state;
+
+label mutate_state:
+    track coins +90;
+    set chapter_state "mutated_state";
+    item remove silver_coin amount 2;
+    item remove old_key amount 1;
+    item add red_badge "Red Badge" "Added after save." icon "body1 1.png" amount 1;
+    mute all;
+    scene color #2b2d42 fade 0.3;
+    sound effect "ui_bell.wav";
+
+    chars.narrator "State B (mutated):";
+    chars.narrator "vars: coins=${coins}, chapter_state=${chapter_state}";
+    chars.narrator "inventory: silver_coin x1, red_badge x1";
+    chars.narrator "background/music changed. Now load slot to restore State A.";
+
+    ask "Next action?"
+        "Load saved slot (expect State A restore)" -> load_saved_state
+        "Mutate again" -> mutate_state
+        "End test" -> end;
+
+label load_saved_state:
+    load "save_load_state_a";
+
+label end:
+    mute all;
+    scene color #1b263b;
+    chars.narrator "Save/load test ended.";

@@ -1,0 +1,34 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.pyi
+.pytest_cache/
+
+# Virtualenv
+.venv/
+venv/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Local saves
+saves/
+assests-demo
+ref/
+refdb/
+# Build
+build/
+dist/
+*.egg-info/
+*.so
+*.pyd
+*.dll
+*.c
+
+# Docs site
+site/node_modules/
+site/dist/
+site/.astro/

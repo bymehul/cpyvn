@@ -1,0 +1,16 @@
+{
+  "name": "cpyvn-docs",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview"
+  },
+  "dependencies": {
+    "@fontsource/jetbrains-mono": "^5.0.17",
+    "@fontsource/sora": "^5.0.16",
+    "astro": "^5.17.1",
+    "marked": "^12.0.0"
+  }
+}

@@ -1,0 +1,86 @@
+---
+import fs from "node:fs";
+import path from "node:path";
+import DocsLayout from "../../layouts/DocsLayout.astro";
+import { withBase } from "../../lib/paths";
+
+const repoRoot = path.resolve(process.cwd(), "..");
+const commandsDir = path.join(repoRoot, "docs", "commands");
+const commandFiles = fs
+  .readdirSync(commandsDir)
+  .filter((file) => file.endsWith(".md") && file !== "index.md")
+  .sort();
+const commands = commandFiles.map((file) => {
+  const name = file.replace(/\.md$/, "");
+  const content = fs.readFileSync(path.join(commandsDir, file), "utf-8");
+  const titleLine = content.split("\n").find((line) => line.startsWith("# "));
+  const title = titleLine ? titleLine.replace("# ", "").trim() : name;
+  return { name, title };
+});
+const featuredCommands = commands.slice(0, 9);
+---
+
+<DocsLayout title="cpyvn Docs" current="/docs">
+  <section class="docs-hero">
+    <div class="eyebrow">Documentation</div>
+    <h1>Everything you need to ship a VN.</h1>
+    <p>
+      Start here for configuration, core concepts, and the command reference.
+    </p>
+  </section>
+
+  <section class="section">
+    <div class="grid grid-2">
+      <a class="card" href={withBase("/docs/overview")}>
+        <h3>Overview</h3>
+        <p>Project quick start, layout, and core ideas.</p>
+      </a>
+      <a class="card" href={withBase("/docs/prefetch")}>
+        <h3>Prefetch</h3>
+        <p>Declare pinned startup assets and prewarmed scripts.</p>
+      </a>
+      <a class="card" href={withBase("/docs/memory")}>
+        <h3>Memory Model</h3>
+        <p>Understand cache layers, scene manifests, and runtime pruning.</p>
+      </a>
+      <a class="card" href={withBase("/docs/editor-tools")}>
+        <h3>Debug Editors</h3>
+        <p>Inspector, hotspot editor, and in-engine script editor controls.</p>
+      </a>
+      <a class="card" href={withBase("/docs/wgpu-blur")}>
+        <h3>WGPU Blur</h3>
+        <p>Optional GPU blur backend, setup steps, and current stability notes.</p>
+      </a>
+      <a class="card" href={withBase("/docs/commands")}>
+        <h3>Command Reference</h3>
+        <p>All DSL commands, one per file, with examples.</p>
+      </a>
+      <a class="card" href={withBase("/contributing")}>
+        <h3>Contributing</h3>
+        <p>How to build, test, and contribute to cpyvn.</p>
+      </a>
+      <a class="card" href={withBase("/roadmap")}>
+        <h3>Roadmap</h3>
+        <p>See what’s planned next.</p>
+      </a>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="eyebrow">Commands</div>
+    <p class="muted" style="margin-top: 0.4rem;">
+      {commands.length} command pages available. Start with these, then open full index.
+    </p>
+    <div class="grid grid-3 stagger" style="margin-top: 1.5rem;">
+      {featuredCommands.map((cmd) => (
+        <a class="card" href={withBase(`/docs/commands/${cmd.name}`)}>
+          <strong>{cmd.title}</strong>
+          <p>Read the `{cmd.name}` command.</p>
+        </a>
+      ))}
+    </div>
+    <div style="margin-top: 1.25rem;">
+      <a class="btn btn-secondary" href={withBase("/docs/commands")}>Browse all commands</a>
+    </div>
+  </section>
+</DocsLayout>

@@ -1,0 +1,75 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import Header from "../components/Header.astro";
+import Footer from "../components/Footer.astro";
+import { withBase } from "../lib/paths";
+
+const sampleScript = String.raw`label start:
+    loading "Loading assets" {
+        preload bg "witches_library.png";
+        preload audio "ui_bell.wav";
+    };
+    scene image "witches_library.png";
+    narrator "Welcome to cpyvn.";
+    ask "What to do?"
+        "Start" -> intro.start
+        "Quit" -> end;`;
+---
+
+<BaseLayout title="cpyvn — Visual Novel Engine">
+  <Header current="/" />
+  <main>
+    <section class="hero">
+      <div class="container">
+        <div class="pill">Script‑first • Python 3.11+ • SDL2</div>
+        <h1 class="fade-in">A minimal VN engine that stays out of your way.</h1>
+        <p class="fade-in">
+          cpyvn focuses on readable scripts, fast iteration, and a tiny core. It keeps
+          engine rules strict so creators can ship without fighting the toolchain.
+        </p>
+        <div class="hero-actions fade-in">
+          <a class="btn btn-primary" href={withBase("/docs")}>Read the docs</a>
+          <a class="btn btn-secondary" href={withBase("/docs/commands")}>Command reference</a>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="container grid grid-3 stagger">
+        <div class="card">
+          <h3>Script‑first</h3>
+          <p>Write scenes in a clean DSL. Keep logic readable and quick to scan.</p>
+        </div>
+        <div class="card">
+          <h3>Predictable memory</h3>
+          <p>Explicit preload + cache pinning keeps large projects stable.</p>
+        </div>
+        <div class="card">
+          <h3>Fast builds</h3>
+          <p>Cythonized hot paths, lightweight runtime, instant iteration.</p>
+        </div>
+        <div class="card">
+          <h3>Debug Editors</h3>
+          <p>Built-in inspector (`F3`), hotspot editor (`F4`), and script editor (`F6`).</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="container grid grid-2">
+        <div>
+          <div class="eyebrow">Minimal DSL</div>
+          <h2>Readable scripts, strict rules.</h2>
+          <p>
+            cpyvn keeps syntax small on purpose — you can scale to complex VNs without
+            losing clarity. Strict errors mean fewer silent bugs.
+          </p>
+        </div>
+        <div class="code-block">
+          <pre><code>{sampleScript}</code></pre>
+        </div>
+      </div>
+    </section>
+  </main>
+  <Footer />
+</BaseLayout>

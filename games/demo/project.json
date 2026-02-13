@@ -1,0 +1,57 @@
+{
+  "name": "demo",
+  "debug": true,
+  "entry": "script.cvn",
+  "window": {
+    "width": 1280,
+    "height": 720,
+    "fps": 120,
+    "resizable": true
+  },
+  "assets": {
+    "bg": "assets/bg",
+    "sprites": "assets/sprites",
+    "audio": "assets/audio",
+    "video": "assets/video"
+  },
+  "prefetch": "prefetch.json",
+  "saves": "saves",
+  "video_backend": "auto",
+  "video_audio": true,
+  "video_framedrop": "auto",
+  "features": {
+    "hud": {
+      "use": true,
+      "path": "hud.cvn"
+    },
+    "items": {
+      "use": true,
+      "path": "items.cvn"
+    },
+    "maps": {
+      "use": true,
+      "path": "maps.cvn"
+    }
+  },
+  "ui": {
+    "text_speed": 40,
+    "box_opacity": 0.7,
+    "font_size": 30,
+    "name_font_size": 26,
+    "choice_font_size": 28,
+    "notify_font_size": 26,
+    "show_perf": true,
+    "title_menu_enabled": true,
+    "title_menu_file": "title_menu.json",
+    "pause_menu_enabled": true,
+    "pause_menu_file": "pause_menu.json",
+    "pause_menu_slots": 9,
+    "pause_menu_columns": 3,
+    "call_auto_loading": true,
+    "call_loading_text": "Loading next scene...",
+    "_comment_call_loading_threshold_ms": "If the last call to a script took >= this many ms, show auto-loading next time.",
+    "call_loading_threshold_ms": 120,
+    "_comment_call_loading_min_show_ms": "When loading is shown, keep it visible for at least this many ms to avoid flicker.",
+    "call_loading_min_show_ms": 140
+  }
+}

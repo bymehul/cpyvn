@@ -1,0 +1,14 @@
+# Inventory items and logic
+
+label inventory_demo:
+    chars.narrator "Let's try the inventory system.";
+    item add potion "HP Potion" "Restores 50 HP." icon "junichi_base.png";
+    item add sword "Iron Sword" "A rusty old sword." icon "junichi_base.png";
+    chars.alice "Check your inventory by pressing [b]I[/b]!";
+    chars.narrator "Wait, I'll give you more potions.";
+    item add potion "HP Potion" "Restores 50 HP." icon "junichi_base.png" amount 4;
+    chars.narrator "Now you have 5 potions.";
+    chars.narrator "I'll take the sword back now.";
+    item remove sword;
+    chars.narrator "Inventory demo finished.";
+    jump ::start;

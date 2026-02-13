@@ -1,0 +1,3 @@
+[submodule "vnef-video"]
+	path = vnef-video
+	url = https://github.com/vnefall/vnef-video.git

@@ -1,0 +1,23 @@
+---
+import fs from "node:fs";
+import path from "node:path";
+import { marked } from "marked";
+import DocsLayout from "../../layouts/DocsLayout.astro";
+
+const repoRoot = path.resolve(process.cwd(), "..");
+const filePath = path.join(repoRoot, "README.md");
+const content = fs.readFileSync(filePath, "utf-8");
+const titleLine = content.split("\n").find((line) => line.startsWith("# "));
+const title = titleLine ? titleLine.replace("# ", "").trim() : "Overview";
+const html = marked.parse(content);
+---
+
+<DocsLayout title={`cpyvn · ${title}`} current="/docs/overview">
+  <section class="section">
+    <div class="card">
+      <div class="eyebrow">Overview</div>
+      <h1>{title}</h1>
+      <div class="markdown" set:html={html}></div>
+    </div>
+  </section>
+</DocsLayout>

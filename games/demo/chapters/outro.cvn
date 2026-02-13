@@ -1,0 +1,5 @@
+label bonus_end:
+    scene color #1b263b;
+    narrator "This line is from chapters/outro.cvn.";
+    narrator "Included files can define labels like this.";
+    go ::end;

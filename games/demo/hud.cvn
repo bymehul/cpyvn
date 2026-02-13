@@ -1,0 +1,8 @@
+# HUD definitions for the demo project
+
+label hud_init:
+    hud add menu_btn text "Menu" 10 10 100 32 -> ::start;
+    hud add save_btn text "Save" 10 50 100 32 -> ::end;
+    hud add inv_btn  text "Inv"  10 90 100 32 -> ::inventory_toggle;
+    hud add help_btn text "Help" 10 130 100 32 -> ::hud_demo;
+    go ::hud_demo_continue;

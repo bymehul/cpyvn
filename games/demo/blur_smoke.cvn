@@ -1,0 +1,45 @@
+# minimal blur smoke test
+
+include "characters.vn" as chars;
+
+label start:
+    loading "Loading blur smoke assets" {
+        preload bg "witches_library.png";
+        preload sprites "body1 1.png";
+    };
+
+    scene color #111827;
+    chars.narrator "Blur smoke test.";
+    chars.narrator "Step 1: scene blur (watch background).";
+    scene image "witches_library.png" blur 1.80;
+    wait 1.80;
+
+    chars.narrator "Step 2A: rect blur in/out (high contrast, easy to see).";
+    add rect blur_box #ff3b30 420 260 center middle blur 1.20;
+    wait 1.50;
+    off blur_box blur 1.20;
+    wait 1.30;
+
+    chars.narrator "Step 2B: character blur in/out (subtle on some sprites).";
+    show chars.alice happy right blur 1.40;
+    wait 1.60;
+    off chars.alice blur 1.40;
+    wait 1.40;
+
+    chars.narrator "Step 2C: Junichi blur in/out (detailed sprite).";
+    show chars.junichi default left blur 1.40;
+    wait 1.60;
+    off chars.junichi blur 1.40;
+    wait 1.40;
+
+    chars.narrator "Step 3: full-screen blend blur.";
+    blend blur 2.00;
+    wait 2.00;
+
+    ask "Run smoke test again?"
+        "Replay" -> start
+        "End" -> end;
+
+label end:
+    scene color #0b1020;
+    chars.narrator "Blur smoke done.";

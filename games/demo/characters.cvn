@@ -1,0 +1,23 @@
+#test Character definitions for demo
+
+character narrator {
+    name "Narrator";
+    color #a8dadc;
+};
+
+character alice {
+    name "Alice";
+    color #ff6b6b;
+    sprite default "body1 1.png";
+    sprite happy "body1 1.png";
+    anchor right bottom;
+    z 1;
+};
+
+character junichi {
+    name "Junichi";
+    color #7dd3fc;
+    sprite default "junichi_base_420.png";
+    anchor left bottom;
+    z 1;
+};

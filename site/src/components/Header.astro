@@ -1,0 +1,28 @@
+---
+import { withBase } from "../lib/paths";
+
+const { current = "" } = Astro.props;
+const nav = [
+  { label: "Docs", path: "/docs", href: withBase("/docs") },
+  { label: "Commands", path: "/docs/commands", href: withBase("/docs/commands") },
+  { label: "Roadmap", path: "/roadmap", href: withBase("/roadmap") },
+];
+---
+
+<header class="site-header">
+  <div class="container nav">
+    <a class="wordmark" href={withBase("/")}>
+      <span>cpy</span><span class="mark-accent">vn</span>
+    </a>
+    <nav class="nav-links">
+      {nav.map((item) => (
+        <a class={current === item.path ? "active" : ""} href={item.href}>
+          {item.label}
+        </a>
+      ))}
+    </nav>
+    <button class="theme-toggle" type="button" data-theme-toggle>
+      Theme
+    </button>
+  </div>
+</header>

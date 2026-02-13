@@ -1,0 +1,46 @@
+{
+  "title": "Demo Pause",
+  "subtitle": "Customizable via pause_menu.json",
+  "title_font_size": 46,
+  "item_font_size": 31,
+  "meta_font_size": 21,
+  "panel_width": 700,
+  "panel_padding": 20,
+  "slot_rows": 3,
+  "slot_cols": 3,
+  "colors": {
+    "overlay": [6, 8, 14, 175],
+    "panel": [16, 21, 34, 238],
+    "panel_border": [91, 124, 176, 255],
+    "title": [245, 247, 255, 255],
+    "subtitle": [180, 196, 226, 255],
+    "item": [230, 236, 248, 255],
+    "item_selected": [255, 214, 116, 255],
+    "slot": [30, 39, 58, 215],
+    "slot_border": [101, 121, 156, 255],
+    "slot_filled": [56, 85, 128, 224],
+    "meta": [174, 188, 214, 255],
+    "ok": [130, 220, 150, 255],
+    "warn": [255, 189, 120, 255]
+  },
+  "buttons": [
+    { "label": "Resume", "action": "resume" },
+    { "label": "Save", "action": "open_save" },
+    { "label": "Load", "action": "open_load" },
+    { "label": "Preferences", "action": "open_prefs" },
+    { "label": "Quick Save", "action": "quick_save" },
+    { "label": "Quick Load", "action": "quick_load" },
+    { "label": "Quit", "action": "quit" }
+  ],
+  "save_slots": [
+    "slot_1",
+    "slot_2",
+    "slot_3",
+    "slot_4",
+    "slot_5",
+    "slot_6",
+    "slot_7",
+    "slot_8",
+    "slot_9"
+  ]
+}

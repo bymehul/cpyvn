@@ -1,0 +1,11 @@
+# optional video demo
+# requires a file at: games/demo/assets/video/opening.mp4
+
+include "characters.vn" as chars;
+
+label start:
+    scene color #111827;
+    chars.narrator "Video demo: plays test.mp4 and waits for full completion.";
+    video play "test.mp4" fit contain;
+    wait video;
+    chars.narrator "Video demo done.";

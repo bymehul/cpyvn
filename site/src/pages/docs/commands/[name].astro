@@ -1,0 +1,44 @@
+---
+import fs from "node:fs";
+import path from "node:path";
+import { marked } from "marked";
+import DocsLayout from "../../../layouts/DocsLayout.astro";
+
+export function getStaticPaths() {
+  const repoRoot = path.resolve(process.cwd(), "..");
+  const commandsDir = path.join(repoRoot, "docs", "commands");
+  const files = fs
+    .readdirSync(commandsDir)
+    .filter((file) => file.endsWith(".md") && file !== "index.md")
+    .sort();
+  return files.map((file) => {
+    const name = file.replace(/\.md$/, "");
+    const content = fs.readFileSync(path.join(commandsDir, file), "utf-8");
+    const titleLine = content.split("\n").find((line) => line.startsWith("# "));
+    const title = titleLine ? titleLine.replace("# ", "").trim() : name;
+    return {
+      params: { name },
+      props: { name, title, content },
+    };
+  });
+}
+
+const { title, content } = Astro.props;
+const html = marked.parse(content);
+---
+
+<DocsLayout title={`cpyvn · ${title}`} current={`/docs/commands/${Astro.params.name}`}>
+  <section class="section">
+    <div class="card">
+      <div class="eyebrow">Command</div>
+      <h1>{title}</h1>
+      <div class="markdown" set:html={html}></div>
+    </div>
+  </section>
+</DocsLayout>
+
+<style>
+  .markdown :global(h1) {
+    margin-top: 0.2rem;
+  }
+</style>
