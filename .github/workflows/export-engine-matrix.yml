@@ -2,6 +2,19 @@ name: Export Engine Matrix
 
 on:
   workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - .github/workflows/export-engine-matrix.yml
+      - tools/export_engine.py
+      - tools/freeze_runner.py
+      - tools/ci/patch_vnef_ffmpeg7.py
+      - setup_cython.py
+      - requirements.txt
+      - requirements-video.txt
+      - vn/**
+      - vnef-video/**
 
 permissions:
   contents: read
@@ -36,26 +49,7 @@ jobs:
         run: python setup_cython.py build_ext --inplace
 
       - name: Patch vnef-video for FFmpeg 7 API
-        run: |
-          python - <<'PY'
-          from pathlib import Path
-          p = Path("vnef-video/src/vnef_video.c")
-          src = p.read_text(encoding="utf-8")
-          replacements = {
-              "int ch = v->adec->ch_layout.nb_channels > 0 ? v->adec->ch_layout.nb_channels : (v->adec->channels > 0 ? v->adec->channels : 2);":
-              "int ch = v->adec->ch_layout.nb_channels > 0 ? v->adec->ch_layout.nb_channels : 2;",
-              "out_info->channels = v->adec->ch_layout.nb_channels > 0 ? v->adec->ch_layout.nb_channels : v->adec->channels;":
-              "out_info->channels = v->adec->ch_layout.nb_channels > 0 ? v->adec->ch_layout.nb_channels : 2;",
-              "int channels = v->adec->ch_layout.nb_channels > 0 ? v->adec->ch_layout.nb_channels : v->adec->channels;":
-              "int channels = v->adec->ch_layout.nb_channels > 0 ? v->adec->ch_layout.nb_channels : 2;",
-          }
-          for old, new in replacements.items():
-              if old not in src:
-                  raise SystemExit(f"expected pattern not found in {p}: {old}")
-              src = src.replace(old, new)
-          p.write_text(src, encoding="utf-8")
-          print("patched", p)
-          PY
+        run: python tools/ci/patch_vnef_ffmpeg7.py
 
       - name: Install vnef-video build deps (Linux)
         if: runner.os == 'Linux'
@@ -122,5 +116,30 @@ jobs:
           name: cpyvn-engine-${{ matrix.os }}
           path: |
             dist/exports/engine/cpyvn-engine-*
+          if-no-files-found: error
+          retention-days: 30
+
+  bundle-all:
+    name: Bundle All Engines
+    runs-on: ubuntu-latest
+    needs: export
+    steps:
+      - name: Download matrix artifacts
+        uses: actions/download-artifact@v4
+        with:
+          pattern: cpyvn-engine-*
+          path: dist/exports/all
+          merge-multiple: true
+
+      - name: Create combined archive
+        run: |
+          cd dist/exports/all
+          zip -r ../cpyvn-engines-all.zip .
+
+      - name: Upload combined archive
+        uses: actions/upload-artifact@v4
+        with:
+          name: cpyvn-engines-all
+          path: dist/exports/cpyvn-engines-all.zip
           if-no-files-found: error
           retention-days: 30

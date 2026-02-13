@@ -146,12 +146,16 @@ matrix workflow:
 It runs on Linux, Windows, and macOS GitHub runners and uploads
 `cpyvn-engine-*` artifacts for each OS.
 The workflow also builds `vnef-video` native libs on each OS before export.
+It also uploads one combined archive: `cpyvn-engines-all`.
 
 Trigger it from GitHub:
 
 1. Open **Actions**.
 2. Select **Export Engine Matrix**.
 3. Click **Run workflow**.
+
+It also runs automatically on pushes to `main` when engine/runtime-related files
+change.
 
 Note:
 
