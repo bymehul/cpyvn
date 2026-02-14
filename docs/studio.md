@@ -50,10 +50,11 @@ The frozen app can:
 - run dev game (`Run (Dev)`)
 - export engine/game bundles
 
-Current limitation:
+Standalone Studio behavior:
 
-- `Freeze runner (PyInstaller)` is disabled inside frozen Studio.
-- Use source Studio (`python tools/studio/main.py`) for freeze-runner player exports.
+- If you enable **Freeze runner**, standalone Studio reuses bundled frozen engine templates from `dist/exports/engine`.
+- This gives no-Python player exports without requiring local PyInstaller.
+- If a target template is missing, Studio will report it and suggest source Studio/CLI build path.
 - For cross-OS CI engine artifacts, use `.github/workflows/export-engine-matrix.yml`.
 
 ## New Game tab

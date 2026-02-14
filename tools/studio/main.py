@@ -19,11 +19,13 @@ if getattr(sys, "frozen", False):
 
 try:
     from tools.studio.templates import create_project_tree, slugify
+    from tools.export_common import copy_any, ensure_clean_dir, normalize_target, zip_dir
     from tools.export_engine import export_engine as run_export_engine
     from tools.export_game import export_game as run_export_game
 except ImportError:
     if __package__:
         from .templates import create_project_tree, slugify
+        from ..export_common import copy_any, ensure_clean_dir, normalize_target, zip_dir
         from ..export_engine import export_engine as run_export_engine
         from ..export_game import export_game as run_export_game
     else:
@@ -31,6 +33,7 @@ except ImportError:
         if str(tools_root) not in sys.path:
             sys.path.insert(0, str(tools_root))
         from templates import create_project_tree, slugify
+        from export_common import copy_any, ensure_clean_dir, normalize_target, zip_dir
         from export_engine import export_engine as run_export_engine
         from export_game import export_game as run_export_game
 
@@ -276,11 +279,9 @@ class StudioApp(tk.Tk):
         freeze_cb = ttk.Checkbutton(toggles, text="Freeze runner (PyInstaller)", variable=self.export_freeze_var)
         freeze_cb.pack(side="left")
         if self._is_frozen_runtime():
-            self.export_freeze_var.set(False)
-            freeze_cb.configure(state="disabled")
             ttk.Label(
                 form,
-                text="Freeze is disabled in standalone Studio. Use source Studio for --freeze engine exports.",
+                text="Standalone Studio uses bundled frozen engine templates from dist/exports/engine.",
                 style="Hint.TLabel",
             ).grid(row=8, column=0, columnspan=3, sticky="w", pady=(2, 0))
 
@@ -385,12 +386,6 @@ class StudioApp(tk.Tk):
         self._append_log(f"[ok] created project: {destination}")
 
     def _export_engine(self) -> None:
-        if self._is_frozen_runtime() and self.export_freeze_var.get():
-            messagebox.showerror(
-                "Freeze unavailable",
-                "Freeze runner is not available in standalone Studio.\nUse source Studio: python tools/studio/main.py",
-            )
-            return
         target = self.export_target_var.get().strip() or "host"
         output = self.export_engine_out_var.get().strip() or "dist/exports/engine"
         base_dir = self._project_workspace_root() if self._is_frozen_runtime() else None
@@ -463,9 +458,10 @@ class StudioApp(tk.Tk):
 
         engine_dir = Path(engine_out) / f"cpyvn-engine-{engine_target}"
         commands: list[list[str]] = []
-        if not engine_dir.exists():
-            if self._is_frozen_runtime() and self.export_freeze_var.get():
-                self.export_freeze_var.set(False)
+        needs_engine_export = not engine_dir.exists()
+        if engine_dir.exists() and self.export_freeze_var.get():
+            needs_engine_export = self._engine_runtime_mode(engine_dir) != "frozen"
+        if needs_engine_export:
             if self._is_frozen_runtime():
                 cmd_engine = self._studio_task_command(
                     "export-engine",
@@ -491,7 +487,7 @@ class StudioApp(tk.Tk):
                 cmd_engine.append("--zip")
             if self.export_strict_var.get():
                 cmd_engine.append("--strict")
-            if self.export_freeze_var.get() and not self._is_frozen_runtime():
+            if self.export_freeze_var.get():
                 cmd_engine.append("--freeze")
             commands.append(cmd_engine)
 
@@ -546,7 +542,15 @@ class StudioApp(tk.Tk):
             engine_target = target
             if engine_target == "host":
                 engine_target = self._detect_host_target()
-            engine_dir = str(Path(engine_out) / f"cpyvn-engine-{engine_target}")
+            engine_dir_path = Path(engine_out) / f"cpyvn-engine-{engine_target}"
+            if self.export_freeze_var.get() and self._engine_runtime_mode(engine_dir_path) != "frozen":
+                messagebox.showerror(
+                    "Frozen engine required",
+                    "Freeze runner is enabled but selected engine export is not frozen.\n"
+                    "Run Export Engine with Freeze enabled first.",
+                )
+                return
+            engine_dir = str(engine_dir_path)
             cmd = self._studio_task_command(
                 "export-game",
                 "--project",
@@ -607,6 +611,18 @@ class StudioApp(tk.Tk):
             if value:
                 return value
         return project_dir.name
+
+    def _engine_runtime_mode(self, engine_dir: Path) -> str:
+        manifest = engine_dir / "engine_manifest.json"
+        if not manifest.exists():
+            return ""
+        try:
+            raw = json.loads(manifest.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError):
+            return ""
+        if not isinstance(raw, dict):
+            return ""
+        return str(raw.get("runtime_mode", "")).strip().lower()
 
     def _run_exported(self) -> None:
         project_path = self.export_project_var.get().strip()
@@ -731,6 +747,90 @@ def _run_dev_task(project: str) -> None:
         sys.argv = argv_backup
 
 
+def _read_runtime_mode(engine_dir: Path) -> str:
+    manifest = engine_dir / "engine_manifest.json"
+    if not manifest.exists():
+        return ""
+    try:
+        raw = json.loads(manifest.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return ""
+    if not isinstance(raw, dict):
+        return ""
+    return str(raw.get("runtime_mode", "")).strip().lower()
+
+
+def _find_bundled_frozen_engine(target: str) -> Path | None:
+    rel = Path("dist") / "exports" / "engine" / f"cpyvn-engine-{target}"
+    roots: list[Path] = []
+
+    env_root = os.environ.get("CPYVN_REPO_ROOT", "").strip()
+    if env_root:
+        roots.append(Path(env_root).expanduser().resolve())
+    meipass = getattr(sys, "_MEIPASS", "")
+    if meipass:
+        roots.append(Path(str(meipass)).resolve())
+    roots.append(Path(sys.executable).resolve().parent)
+    roots.append(Path.cwd().resolve())
+
+    seen: set[Path] = set()
+    for root in roots:
+        if root in seen:
+            continue
+        seen.add(root)
+        probe_nodes = [root]
+        probe_nodes.extend(list(root.parents)[:3])
+        for node in probe_nodes:
+            candidate = (node / rel).resolve()
+            if not candidate.exists():
+                continue
+            if _read_runtime_mode(candidate) == "frozen":
+                return candidate
+    return None
+
+
+def _copy_bundled_frozen_engines(target: str, output: str, zip_output: bool) -> None:
+    raw_target = str(target or "host").strip().lower()
+    if raw_target == "host":
+        if sys.platform.startswith("win"):
+            raw_target = "windows"
+        elif sys.platform == "darwin":
+            raw_target = "macos"
+        else:
+            raw_target = "linux"
+    targets = ["linux", "windows", "macos"] if raw_target == "all" else [normalize_target(raw_target)]
+
+    output_root = Path(output).expanduser().resolve()
+    output_root.mkdir(parents=True, exist_ok=True)
+
+    copied: list[Path] = []
+    missing: list[str] = []
+    for t in targets:
+        bundled = _find_bundled_frozen_engine(t)
+        if bundled is None:
+            missing.append(t)
+            continue
+        dst = output_root / bundled.name
+        if bundled.resolve() != dst.resolve():
+            ensure_clean_dir(dst)
+            copy_any(bundled, dst)
+        copied.append(dst)
+        print(f"[ok] bundled frozen engine: {dst}")
+        if zip_output:
+            zip_path = output_root / f"{bundled.name}.zip"
+            zip_dir(dst, zip_path)
+            print(f"[ok] zip: {zip_path}")
+
+    if missing:
+        raise RuntimeError(
+            "Missing bundled frozen engine template(s): "
+            + ", ".join(missing)
+            + ". Use source Studio/CLI to build them, or use a with-engines Studio package."
+        )
+    if copied:
+        print(f"[done] exported {len(copied)} bundled frozen engine template(s) to {output_root}")
+
+
 def _run_studio_task(argv: list[str]) -> int:
     def _workspace_root() -> Path:
         base = Path.cwd().resolve()
@@ -785,13 +885,15 @@ def _run_studio_task(argv: list[str]) -> int:
         artifacts = str(args.artifacts or "vnef-video/artifacts")
         freeze_skip_cython = bool(args.freeze_skip_cython)
         if getattr(sys, "frozen", False):
-            if args.freeze:
-                raise RuntimeError(
-                    "Freeze runner is unavailable in standalone Studio. "
-                    "Run source Studio (`python tools/studio/main.py`) for --freeze exports."
-                )
             output = _cwd_abs(output)
             artifacts = _cwd_abs(artifacts)
+            if args.freeze:
+                _copy_bundled_frozen_engines(
+                    target=str(args.target or "host"),
+                    output=output,
+                    zip_output=bool(args.zip),
+                )
+                return 0
         run_export_engine(
             target=str(args.target or "host"),
             output=output,
