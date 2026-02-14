@@ -90,6 +90,7 @@ Useful flags:
 - `--engine <engine-export-dir>` (optional override)
 - `--output dist/exports/game`
 - `--zip`
+- `--no-protect-scripts` (keep raw `.cvn/.vn` files in exported game)
 
 Output example:
 
@@ -97,6 +98,7 @@ Output example:
 dist/exports/game/demo-linux/
   engine/
   game/
+    .cpyvn/scripts.zip
   play.sh
   game_manifest.json
 ```
@@ -134,6 +136,8 @@ export CPYVN_PYTHON=/path/to/python3
 
 - With `--freeze`, player package does not need Python installation.
 - Launchers set `CPYVN_VNEF_VIDEO_LIB` to bundled native lib automatically.
+- Launchers also set `CPYVN_PROJECT_ROOT` and `CPYVN_SCRIPT_BUNDLE`.
+- By default, game export bundles script sources (`.cvn/.vn`) into `game/.cpyvn/scripts.zip` and removes raw script files.
 - Freeze target must match host OS (build each OS on that OS/CI runner).
 
 ## GitHub Actions (Cross-OS Artifacts)

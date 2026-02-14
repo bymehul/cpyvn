@@ -48,14 +48,16 @@ The frozen app can:
 
 - create projects
 - run dev game (`Run (Dev)`)
-- export engine/game bundles
+- one-click export player bundles
 
 Standalone Studio behavior:
 
-- If you enable **Freeze runner**, standalone Studio reuses bundled frozen engine templates from `dist/exports/engine`.
+- One-click export always uses frozen runner mode.
+- Standalone Studio reuses bundled frozen engine templates from `dist/exports/engine`.
 - This gives no-Python player exports without requiring local PyInstaller.
 - If a target template is missing, Studio will report it and suggest source Studio/CLI build path.
 - For cross-OS CI engine artifacts, use `.github/workflows/export-engine-matrix.yml`.
+- Video artifacts are auto-detected from `dist/exports/engine` or `vnef-video/artifacts`.
 
 ## New Game tab
 
@@ -75,21 +77,16 @@ Generated files include:
 
 ## Export tab
 
-- **Export Engine** wraps `tools/export_engine.py`.
-- **Export Game** wraps `tools/export_game.py`.
 - **One-Click Export**: auto-resolves paths from your project location, builds engine if missing, then exports game.
 - **Run (Dev)** runs current project directly from source.
 - **Run (Exported)** runs `play.sh` / `play.bat` from exported bundle.
 - **Stop** terminates current run/export process.
-- **Freeze runner (PyInstaller)** creates player-ready no-Python runtime in engine export.
-- Uses the selected target (`host|linux|windows|macos` for game, plus `all` for engine).
+- Uses the selected target (`host|linux|windows|macos`).
 - Logs stream in the GUI log panel.
 - In frozen Studio builds, export/run tasks are executed through internal Studio task mode (`--studio-task`).
+- Exported games protect script sources by bundling `.cvn`/`.vn` into `game/.cpyvn/scripts.zip`.
 
 ## Notes
 
-- `Export Game` does not allow `target=all` by design.
-- For frozen exports, `play.*` can run directly.
-- For source runtime exports, run engine setup first:
-  - Linux/macOS: `engine/setup-engine.sh`
-  - Windows: `engine/setup-engine.bat`
+- One-click game export does not allow `target=all` by design.
+- One-click exports are player-ready (`play.*` runs directly).

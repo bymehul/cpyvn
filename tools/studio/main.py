@@ -113,9 +113,6 @@ class StudioApp(tk.Tk):
 
         self.export_project_var = tk.StringVar(value=str(self.repo_root / "games" / "demo"))
         self.export_target_var = tk.StringVar(value="host")
-        self.export_zip_var = tk.BooleanVar(value=True)
-        self.export_strict_var = tk.BooleanVar(value=False)
-        self.export_freeze_var = tk.BooleanVar(value=True)
         self.export_artifacts_var = tk.StringVar(value="vnef-video/artifacts")
         self.export_engine_out_var = tk.StringVar(value="dist/exports/engine")
         self.export_game_out_var = tk.StringVar(value="dist/exports/game")
@@ -148,6 +145,35 @@ class StudioApp(tk.Tk):
         if project_path.exists():
             return project_path.parent.resolve()
         return self._detect_workspace_root()
+
+    def _auto_artifacts_root(self, base_dir: Path | None = None) -> str:
+        candidates: list[Path] = []
+        explicit = self.export_artifacts_var.get().strip()
+        if explicit:
+            candidates.append(Path(explicit).expanduser())
+        if base_dir is not None:
+            candidates.append((base_dir / "dist" / "exports" / "engine").resolve())
+            candidates.append((base_dir / "vnef-video" / "artifacts").resolve())
+        candidates.append((self.repo_root / "dist" / "exports" / "engine").resolve())
+        candidates.append((self.repo_root / "vnef-video" / "artifacts").resolve())
+
+        seen: set[Path] = set()
+        normalized: list[Path] = []
+        for item in candidates:
+            path = item if item.is_absolute() else (Path.cwd().resolve() / item).resolve()
+            if path in seen:
+                continue
+            seen.add(path)
+            normalized.append(path)
+
+        for path in normalized:
+            if path.exists():
+                self.export_artifacts_var.set(str(path))
+                return str(path)
+
+        fallback = str(normalized[0] if normalized else (self.repo_root / "dist" / "exports" / "engine").resolve())
+        self.export_artifacts_var.set(fallback)
+        return fallback
 
     def _build_ui(self) -> None:
         root = ttk.Frame(self, style="Root.TFrame", padding=14)
@@ -242,7 +268,7 @@ class StudioApp(tk.Tk):
         ttk.Label(form, text="Run / Export", style="CardTitle.TLabel").grid(row=0, column=0, columnspan=3, sticky="w")
         ttk.Label(
             form,
-            text="1) Choose project. 2) Export engine (optional). 3) Export game or run.",
+            text="1) Choose project. 2) Click One-Click Export. 3) Run exported build.",
             style="Hint.TLabel",
         ).grid(row=1, column=0, columnspan=3, sticky="w", pady=(2, 10))
 
@@ -254,15 +280,20 @@ class StudioApp(tk.Tk):
         ttk.Combobox(
             form,
             textvariable=self.export_target_var,
-            values=["host", "linux", "windows", "macos", "all"],
+            values=["host", "linux", "windows", "macos"],
             state="readonly",
             width=14,
         ).grid(row=3, column=1, sticky="w", pady=4, padx=(8, 8))
         ttk.Label(form, text="Use host for current OS", style="Hint.TLabel").grid(row=3, column=2, sticky="w", pady=4)
 
-        ttk.Label(form, text="Artifacts Root", style="Body.TLabel").grid(row=4, column=0, sticky="w", pady=4)
-        ttk.Entry(form, textvariable=self.export_artifacts_var).grid(row=4, column=1, sticky="ew", pady=4, padx=(8, 8))
-        ttk.Label(form, text="vnef-video artifacts location", style="Hint.TLabel").grid(row=4, column=2, sticky="w", pady=4)
+        ttk.Label(form, text="Video Artifacts", style="Body.TLabel").grid(row=4, column=0, sticky="w", pady=4)
+        ttk.Label(form, text="Auto", style="Body.TLabel").grid(row=4, column=1, sticky="w", pady=4, padx=(8, 8))
+        ttk.Label(form, text="Auto-detected from exports/engine or vnef-video/artifacts", style="Hint.TLabel").grid(
+            row=4,
+            column=2,
+            sticky="w",
+            pady=4,
+        )
 
         ttk.Label(form, text="Engine Output", style="Body.TLabel").grid(row=5, column=0, sticky="w", pady=4)
         ttk.Entry(form, textvariable=self.export_engine_out_var).grid(row=5, column=1, sticky="ew", pady=4, padx=(8, 8))
@@ -272,12 +303,11 @@ class StudioApp(tk.Tk):
         ttk.Entry(form, textvariable=self.export_game_out_var).grid(row=6, column=1, sticky="ew", pady=4, padx=(8, 8))
         ttk.Label(form, text="Game export root", style="Hint.TLabel").grid(row=6, column=2, sticky="w", pady=4)
 
-        toggles = ttk.Frame(form, style="Card.TFrame")
-        toggles.grid(row=7, column=0, columnspan=3, sticky="w", pady=(10, 2))
-        ttk.Checkbutton(toggles, text="Create zip", variable=self.export_zip_var).pack(side="left", padx=(0, 14))
-        ttk.Checkbutton(toggles, text="Strict artifact check (engine)", variable=self.export_strict_var).pack(side="left", padx=(0, 14))
-        freeze_cb = ttk.Checkbutton(toggles, text="Freeze runner (PyInstaller)", variable=self.export_freeze_var)
-        freeze_cb.pack(side="left")
+        ttk.Label(
+            form,
+            text="One-Click Export always builds frozen runtime and zip output.",
+            style="Hint.TLabel",
+        ).grid(row=7, column=0, columnspan=3, sticky="w", pady=(10, 2))
         if self._is_frozen_runtime():
             ttk.Label(
                 form,
@@ -289,17 +319,13 @@ class StudioApp(tk.Tk):
         actions.grid(row=9, column=0, columnspan=3, sticky="w", pady=(12, 0))
         quick_export_btn = ttk.Button(actions, text="One-Click Export", command=self._quick_export)
         quick_export_btn.pack(side="left", padx=(0, 12))
-        export_engine_btn = ttk.Button(actions, text="Export Engine", command=self._export_engine)
-        export_engine_btn.pack(side="left", padx=(0, 8))
-        export_game_btn = ttk.Button(actions, text="Export Game", command=self._export_game)
-        export_game_btn.pack(side="left", padx=(0, 8))
         run_dev_btn = ttk.Button(actions, text="Run (Dev)", command=self._run_dev)
         run_dev_btn.pack(side="left", padx=(8, 8))
         run_export_btn = ttk.Button(actions, text="Run (Exported)", command=self._run_exported)
         run_export_btn.pack(side="left")
         self.stop_button = ttk.Button(actions, text="Stop", command=self._stop_run, state="disabled")
         self.stop_button.pack(side="left", padx=(12, 0))
-        self._run_buttons.extend([quick_export_btn, export_engine_btn, export_game_btn, run_dev_btn, run_export_btn])
+        self._run_buttons.extend([quick_export_btn, run_dev_btn, run_export_btn])
 
         log_card = ttk.Frame(parent, style="Card.TFrame", padding=10)
         log_card.pack(fill="both", expand=True, pady=(10, 0))
@@ -328,6 +354,15 @@ class StudioApp(tk.Tk):
         self.log_text.insert("end", text.rstrip() + "\n")
         self.log_text.see("end")
         self.log_text.configure(state="disabled")
+
+    def _use_zip(self) -> bool:
+        return True
+
+    def _use_strict_artifacts(self) -> bool:
+        return False
+
+    def _use_frozen_runner(self) -> bool:
+        return True
 
     def _set_running(self, value: bool) -> None:
         self._running = value
@@ -391,9 +426,7 @@ class StudioApp(tk.Tk):
         base_dir = self._project_workspace_root() if self._is_frozen_runtime() else None
         if self._is_frozen_runtime():
             output = self._resolve_user_path(output, "dist/exports/engine", base_dir=base_dir)
-        artifacts = self.export_artifacts_var.get().strip() or "vnef-video/artifacts"
-        if self._is_frozen_runtime():
-            artifacts = self._resolve_user_path(artifacts, "vnef-video/artifacts", base_dir=base_dir)
+        artifacts = self._auto_artifacts_root(base_dir=base_dir)
         if self._is_frozen_runtime():
             cmd = self._studio_task_command(
                 "export-engine",
@@ -415,11 +448,11 @@ class StudioApp(tk.Tk):
                 "--artifacts",
                 artifacts,
             ]
-        if self.export_zip_var.get():
+        if self._use_zip():
             cmd.append("--zip")
-        if self.export_strict_var.get():
+        if self._use_strict_artifacts():
             cmd.append("--strict")
-        if self.export_freeze_var.get():
+        if self._use_frozen_runner():
             cmd.append("--freeze")
         self._run_command(cmd)
 
@@ -447,11 +480,7 @@ class StudioApp(tk.Tk):
             "dist/exports/game",
             base_dir=base_dir,
         )
-        artifacts = self._resolve_user_path(
-            self.export_artifacts_var.get().strip() or "vnef-video/artifacts",
-            "vnef-video/artifacts",
-            base_dir=base_dir,
-        )
+        artifacts = self._auto_artifacts_root(base_dir=base_dir)
         self.export_engine_out_var.set(engine_out)
         self.export_game_out_var.set(game_out)
         self.export_artifacts_var.set(artifacts)
@@ -459,7 +488,7 @@ class StudioApp(tk.Tk):
         engine_dir = Path(engine_out) / f"cpyvn-engine-{engine_target}"
         commands: list[list[str]] = []
         needs_engine_export = not engine_dir.exists()
-        if engine_dir.exists() and self.export_freeze_var.get():
+        if engine_dir.exists() and self._use_frozen_runner():
             needs_engine_export = self._engine_runtime_mode(engine_dir) != "frozen"
         if needs_engine_export:
             if self._is_frozen_runtime():
@@ -483,11 +512,11 @@ class StudioApp(tk.Tk):
                     "--artifacts",
                     artifacts,
                 ]
-            if self.export_zip_var.get():
+            if self._use_zip():
                 cmd_engine.append("--zip")
-            if self.export_strict_var.get():
+            if self._use_strict_artifacts():
                 cmd_engine.append("--strict")
-            if self.export_freeze_var.get():
+            if self._use_frozen_runner():
                 cmd_engine.append("--freeze")
             commands.append(cmd_engine)
 
@@ -516,7 +545,7 @@ class StudioApp(tk.Tk):
                 "--engine",
                 str(engine_dir),
             ]
-        if self.export_zip_var.get():
+        if self._use_zip():
             cmd_game.append("--zip")
         commands.append(cmd_game)
 
@@ -543,7 +572,7 @@ class StudioApp(tk.Tk):
             if engine_target == "host":
                 engine_target = self._detect_host_target()
             engine_dir_path = Path(engine_out) / f"cpyvn-engine-{engine_target}"
-            if self.export_freeze_var.get() and self._engine_runtime_mode(engine_dir_path) != "frozen":
+            if self._use_frozen_runner() and self._engine_runtime_mode(engine_dir_path) != "frozen":
                 messagebox.showerror(
                     "Frozen engine required",
                     "Freeze runner is enabled but selected engine export is not frozen.\n"
@@ -573,7 +602,7 @@ class StudioApp(tk.Tk):
                 "--output",
                 output,
             ]
-        if self.export_zip_var.get():
+        if self._use_zip():
             cmd.append("--zip")
         self._run_command(cmd)
 

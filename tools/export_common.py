@@ -69,6 +69,9 @@ def find_vnef_artifact(target: str, artifacts_root: Path) -> Path | None:
         artifacts_root / target / "lib" / lib_name,
         artifacts_root / target / "bin" / lib_name,
         artifacts_root / lib_name,
+        # Allow using exported engine folders directly as artifact source.
+        artifacts_root / f"cpyvn-engine-{target}" / "runtime" / "vnef" / lib_name,
+        artifacts_root / "runtime" / "vnef" / lib_name,
         REPO_ROOT / "vnef-video" / "build" / lib_name,
         REPO_ROOT / "vnef-video" / "build" / "Release" / lib_name,
         REPO_ROOT / "vnef-video" / "build" / "Debug" / lib_name,

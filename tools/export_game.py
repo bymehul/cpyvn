@@ -4,6 +4,7 @@ from __future__ import annotations
 import argparse
 import json
 import sys
+import zipfile
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -18,6 +19,8 @@ from export_common import (
     write_json,
     zip_dir,
 )
+
+SCRIPT_SUFFIXES = {".cvn", ".vn"}
 
 
 def _project_name(project_dir: Path) -> str:
@@ -55,6 +58,43 @@ def _engine_runner_relpath(engine_dir: Path, target: str) -> Path:
     return Path(rel)
 
 
+def _collect_script_files(project_dir: Path) -> list[Path]:
+    scripts: list[Path] = []
+    for path in project_dir.rglob("*"):
+        if not path.is_file():
+            continue
+        if path.suffix.lower() not in SCRIPT_SUFFIXES:
+            continue
+        if ".cpyvn" in path.parts:
+            continue
+        scripts.append(path)
+    scripts.sort()
+    return scripts
+
+
+def _protect_script_sources(project_dir: Path) -> dict:
+    scripts = _collect_script_files(project_dir)
+    if not scripts:
+        return {"enabled": False, "count": 0, "bundle": ""}
+
+    bundle_dir = project_dir / ".cpyvn"
+    bundle_dir.mkdir(parents=True, exist_ok=True)
+    bundle_path = bundle_dir / "scripts.zip"
+
+    with zipfile.ZipFile(bundle_path, "w", compression=zipfile.ZIP_DEFLATED) as zf:
+        for script in scripts:
+            zf.write(script, script.relative_to(project_dir).as_posix())
+
+    for script in scripts:
+        script.unlink()
+
+    return {
+        "enabled": True,
+        "count": len(scripts),
+        "bundle": str(bundle_path.relative_to(project_dir)).replace("\\", "/"),
+    }
+
+
 def _write_game_launchers(bundle_dir: Path, target: str, lib_name: str, engine_has_frozen: bool, runner_relpath: Path) -> None:
     exec_name = str(runner_relpath).replace("/", "\\") if target == "windows" else str(runner_relpath)
     if target == "windows":
@@ -68,6 +108,8 @@ def _write_game_launchers(bundle_dir: Path, target: str, lib_name: str, engine_h
                     f"set RUNNER=%ROOT%engine\\{exec_name}",
                     "if exist \"%RUNNER%\" (",
                     f"  set CPYVN_VNEF_VIDEO_LIB=%ROOT%engine\\runtime\\vnef\\{lib_name}",
+                    "  set CPYVN_PROJECT_ROOT=%ROOT%game",
+                    "  set CPYVN_SCRIPT_BUNDLE=%ROOT%game\\.cpyvn\\scripts.zip",
                     "  \"%RUNNER%\" --project \"%ROOT%game\" %*",
                     "  goto :eof",
                     ")",
@@ -77,6 +119,8 @@ def _write_game_launchers(bundle_dir: Path, target: str, lib_name: str, engine_h
                     "%PYBIN% --version >nul 2>&1",
                     "if errorlevel 1 set PYBIN=py -3",
                     f"set CPYVN_VNEF_VIDEO_LIB=%ROOT%engine\\runtime\\vnef\\{lib_name}",
+                    "set CPYVN_PROJECT_ROOT=%ROOT%game",
+                    "set CPYVN_SCRIPT_BUNDLE=%ROOT%game\\.cpyvn\\scripts.zip",
                     "%PYBIN% -c \"import pygame\" >nul 2>&1",
                     "if errorlevel 1 (",
                     "  echo Missing runtime deps. Run engine\\setup-engine.bat first.",
@@ -103,6 +147,8 @@ def _write_game_launchers(bundle_dir: Path, target: str, lib_name: str, engine_h
                 "fi",
                 'if [[ -x "$RUNNER" ]]; then',
                 f'  export CPYVN_VNEF_VIDEO_LIB="$ROOT_DIR/engine/runtime/vnef/{lib_name}"',
+                '  export CPYVN_PROJECT_ROOT="$ROOT_DIR/game"',
+                '  export CPYVN_SCRIPT_BUNDLE="$ROOT_DIR/game/.cpyvn/scripts.zip"',
                 '  "$RUNNER" --project "$ROOT_DIR/game" "$@"',
                 "  exit $?",
                 "fi",
@@ -119,6 +165,8 @@ def _write_game_launchers(bundle_dir: Path, target: str, lib_name: str, engine_h
                 "  exit 127",
                 "fi",
                 f'export CPYVN_VNEF_VIDEO_LIB="$ROOT_DIR/engine/runtime/vnef/{lib_name}"',
+                'export CPYVN_PROJECT_ROOT="$ROOT_DIR/game"',
+                'export CPYVN_SCRIPT_BUNDLE="$ROOT_DIR/game/.cpyvn/scripts.zip"',
                 'if ! "$PYBIN" -c "import pygame" >/dev/null 2>&1; then',
                 '  echo "Missing runtime deps. Run: $ROOT_DIR/engine/setup-engine.sh" >&2',
                 "  exit 2",
@@ -139,6 +187,7 @@ def export_game(
     engine: str = "",
     output: str = "dist/exports/game",
     zip_output: bool = False,
+    protect_scripts: bool = True,
 ) -> Path:
     target_arg = target.strip().lower()
     if target_arg == "host":
@@ -166,6 +215,11 @@ def export_game(
 
     copy_any(engine_dir, bundle_dir / "engine")
     copy_any(project_dir, bundle_dir / "game")
+    script_protection = _protect_script_sources(bundle_dir / "game") if protect_scripts else {
+        "enabled": False,
+        "count": 0,
+        "bundle": "",
+    }
 
     lib_name = vnef_lib_name(resolved_target)
     runner_relpath = _engine_runner_relpath(bundle_dir / "engine", resolved_target)
@@ -191,6 +245,7 @@ def export_game(
             "engine_dir": "engine",
             "runtime_mode": "frozen" if engine_has_frozen else "source",
             "launchers": ["play.bat"] if resolved_target == "windows" else ["play.sh"],
+            "script_protection": script_protection,
         },
     )
 
@@ -210,6 +265,11 @@ def main(argv: list[str] | None = None) -> None:
     parser.add_argument("--engine", default="", help="Path to engine export directory (cpyvn-engine-<target>)")
     parser.add_argument("--output", default="dist/exports/game", help="Output directory")
     parser.add_argument("--zip", action="store_true", help="Also create a zip archive")
+    parser.add_argument(
+        "--no-protect-scripts",
+        action="store_true",
+        help="Do not bundle/remove .cvn/.vn files in exported game.",
+    )
     args = parser.parse_args(argv)
     export_game(
         project=str(args.project),
@@ -217,6 +277,7 @@ def main(argv: list[str] | None = None) -> None:
         engine=str(args.engine),
         output=str(args.output),
         zip_output=bool(args.zip),
+        protect_scripts=not bool(args.no_protect_scripts),
     )
 
 

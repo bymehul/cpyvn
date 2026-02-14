@@ -1,7 +1,9 @@
 from __future__ import annotations
 
+import os
 import logging
 import importlib
+import zipfile
 from pathlib import Path
 import shlex
 from typing import Dict, List, Optional
@@ -89,6 +91,100 @@ _parse_call = _include_mod._parse_call
 _parse_include = _include_mod._parse_include
 
 
+def _candidate_script_bundles(path: Path) -> list[Path]:
+    cdef list bundles = []
+    cdef set seen = set()
+    cdef str env_bundle = os.getenv("CPYVN_SCRIPT_BUNDLE", "").strip()
+    cdef str env_root = os.getenv("CPYVN_PROJECT_ROOT", "").strip()
+    cdef object bundle_path
+    cdef object node
+
+    if env_bundle:
+        bundle_path = Path(env_bundle).expanduser().resolve()
+        if bundle_path not in seen:
+            bundles.append(bundle_path)
+            seen.add(bundle_path)
+
+    if env_root:
+        bundle_path = (Path(env_root).expanduser().resolve() / ".cpyvn" / "scripts.zip")
+        if bundle_path not in seen:
+            bundles.append(bundle_path)
+            seen.add(bundle_path)
+
+    for node in [path.parent, *path.parents]:
+        bundle_path = (node / ".cpyvn" / "scripts.zip").resolve()
+        if bundle_path in seen:
+            continue
+        bundles.append(bundle_path)
+        seen.add(bundle_path)
+    return bundles
+
+
+def _bundle_member_candidates(path: Path) -> list[str]:
+    cdef list members = []
+    cdef set seen = set()
+    cdef str env_root = os.getenv("CPYVN_PROJECT_ROOT", "").strip()
+    cdef object root
+    cdef object rel
+
+    if env_root:
+        root = Path(env_root).expanduser().resolve()
+        try:
+            rel = path.relative_to(root).as_posix()
+            if rel not in seen:
+                members.append(rel)
+                seen.add(rel)
+        except ValueError:
+            pass
+
+    for root in [path.parent, *path.parents]:
+        if not (root / "project.json").exists():
+            continue
+        try:
+            rel = path.relative_to(root).as_posix()
+            if rel not in seen:
+                members.append(rel)
+                seen.add(rel)
+        except ValueError:
+            continue
+
+    rel = path.as_posix().lstrip("/")
+    if rel and rel not in seen:
+        members.append(rel)
+        seen.add(rel)
+
+    rel = path.name
+    if rel and rel not in seen:
+        members.append(rel)
+    return members
+
+
+def _read_script_from_bundle(path: Path) -> object:
+    cdef list bundle_paths = _candidate_script_bundles(path)
+    cdef list member_candidates = _bundle_member_candidates(path)
+    cdef object bundle_path
+    cdef object member
+    cdef object raw
+
+    for bundle_path in bundle_paths:
+        if not bundle_path.exists():
+            continue
+        try:
+            with zipfile.ZipFile(bundle_path, "r") as zf:
+                for member in member_candidates:
+                    try:
+                        raw = zf.read(member)
+                    except KeyError:
+                        continue
+                    try:
+                        return raw.decode("utf-8")
+                    except UnicodeDecodeError:
+                        continue
+        except (OSError, zipfile.BadZipFile):
+            continue
+    return None
+
+
 @cython.cfunc
 @cython.inline
 cdef void _mark_include_closed(dict include_state):
@@ -108,16 +204,21 @@ def parse_script(path: str | Path, _seen: Optional[set[Path]] = None) -> Script:
     cdef list commands
     cdef dict labels
     cdef dict include_state
+    cdef object bundled_text
     path = Path(path).resolve()
-    if not path.exists():
-        raise ScriptParseError(f"Script not found: {path}")
     if _seen is None:
         _seen = set()
     if path in _seen:
         raise ScriptParseError(f"Circular include detected: {path}")
     _seen.add(path)
     try:
-        lines = path.read_text(encoding="utf-8").splitlines()
+        if path.exists():
+            lines = path.read_text(encoding="utf-8").splitlines()
+        else:
+            bundled_text = _read_script_from_bundle(path)
+            if bundled_text is None:
+                raise ScriptParseError(f"Script not found: {path}")
+            lines = str(bundled_text).splitlines()
         commands = []
         labels = {}
         include_state = {"open": True}
