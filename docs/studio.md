@@ -5,6 +5,19 @@
 - Create a new game project (with window size/FPS options)
 - Run/export workflows for dev and player builds
 
+## Download (Recommended)
+
+Use the prebuilt **with-engines** Studio bundles from GitHub Releases:
+
+- Latest release: `https://github.com/bymehul/cpyvn/releases/latest`
+- Linux: `cpyvn-studio-linux-with-engines.zip`
+- Windows: `cpyvn-studio-windows-with-engines.zip`
+- macOS: `cpyvn-studio-macos-with-engines.zip`
+- All-in-one archive: `cpyvn-studios-with-engines-all.zip`
+
+These bundles already include cross-platform frozen engine templates under
+`dist/exports/engine`, so users do not need a separate engine download.
+
 ## Run
 
 ```bash
