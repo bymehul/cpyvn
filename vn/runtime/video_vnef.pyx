@@ -120,6 +120,8 @@ def _candidate_library_paths() -> list[Path]:
         for lib_name in _candidate_library_names():
             _push(root / lib_name)
             _push(root / "runtime" / "vnef" / lib_name)
+            _push(root / "engine" / "runtime" / "vnef" / lib_name)
+            _push(root / "dist" / "exports" / "engine" / f"cpyvn-engine-{platform_key}" / "runtime" / "vnef" / lib_name)
             _push(root / "vnef-video-artifacts" / platform_key / lib_name)
             _push(root / "vnef-video-artifacts" / platform_key / "lib" / lib_name)
             _push(root / "vnef-video-artifacts" / platform_key / "bin" / lib_name)

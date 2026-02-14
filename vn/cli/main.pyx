@@ -62,7 +62,8 @@ cpdef void _configure_logging(bint debug):
     root.setLevel(level)
 
 cpdef void main():
-    cdef object parser, args, project, script_path, project_root, ui
+    cdef object parser, args, project, script_path, project_root, ui, project_arg
+    cdef bint project_arg_is_file
     cdef int width, height, fps
     cdef bint debug
     cdef dict asset_dirs
@@ -77,10 +78,20 @@ cpdef void main():
     args = parser.parse_args()
 
     if args.project:
-        project = load_project(args.project)
+        project_arg = Path(args.project).resolve()
+        project_arg_is_file = project_arg.exists() and project_arg.is_file()
+        if project_arg_is_file:
+            project = load_project(project_arg.parent)
+        else:
+            project = load_project(project_arg)
         debug = args.debug or _env_debug() or project.debug
         _configure_logging(debug)
-        script_path = Path(args.script).resolve() if args.script else project.entry
+        if args.script:
+            script_path = Path(args.script).resolve()
+        elif project_arg_is_file:
+            script_path = project_arg
+        else:
+            script_path = project.entry
         width  = args.width  or project.window.width
         height = args.height or project.window.height
         fps    = args.fps    or project.window.fps

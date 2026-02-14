@@ -1,7 +1,7 @@
 # optional video demo
 # requires a file at: games/demo/assets/video/opening.mp4
 
-include "characters.vn" as chars;
+include "characters.cvn" as chars;
 
 label start:
     scene color #111827;
